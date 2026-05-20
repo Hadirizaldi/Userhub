@@ -38,6 +38,8 @@ public static class DependencyInjection
         services.AddSingleton<ReferenceDataCatalog>();
         services.AddSingleton<IReferenceDataCatalog>(sp => sp.GetRequiredService<ReferenceDataCatalog>());
         services.AddHostedService(sp => sp.GetRequiredService<ReferenceDataCatalog>());
+        
+        services.AddScoped<INipGenerator, NipGenerator>();
 
         return services;
     }

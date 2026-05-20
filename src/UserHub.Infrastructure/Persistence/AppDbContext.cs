@@ -32,6 +32,8 @@ public partial class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasPostgresExtension("pgcrypto");
+
         modelBuilder.Entity<ConditionStatuses>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("condition_statuses_pkey");
@@ -115,7 +117,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.ConditionStatusId).HasColumnName("condition_status_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
@@ -129,10 +130,12 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Password)
                 .HasMaxLength(255)
                 .HasColumnName("password");
+            entity.Property(e => e.Phone)
+                .HasMaxLength(20)
+                .HasColumnName("phone");
             entity.Property(e => e.StatusId).HasColumnName("status_id");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
                 .HasColumnName("updated_at");
 
             entity.HasOne(d => d.ConditionStatus).WithMany(p => p.Users)
@@ -162,6 +165,7 @@ public partial class AppDbContext : DbContext
                         j.IndexerProperty<int>("RoleId").HasColumnName("role_id");
                     });
         });
+        modelBuilder.HasSequence("user_nip_seq");
 
         OnModelCreatingPartial(modelBuilder);
     }

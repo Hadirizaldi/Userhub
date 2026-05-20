@@ -5,6 +5,7 @@ public sealed record UserListItemDto(
     string Nip,
     string Fullname,
     string Email,
+    string? Phone,
     int StatusId,
     string StatusName,
     int ConditionStatusId,

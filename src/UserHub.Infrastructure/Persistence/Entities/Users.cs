@@ -23,6 +23,8 @@ public partial class Users
 
     public DateTime? UpdatedAt { get; set; }
 
+    public string? Phone { get; set; }
+
     public virtual ConditionStatuses ConditionStatus { get; set; } = null!;
 
     public virtual ICollection<LoginLogs> LoginLogs { get; set; } = new List<LoginLogs>();

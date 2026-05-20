@@ -20,6 +20,7 @@ public static class DependencyInjection
             typeof(Common.Behaviors.ValidationBehavior<,>));
 
         services.AddSingleton<PasswordPolicy>();
+        services.AddSingleton<PhonePolicy>();
 
         return services;
     }
