@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using UserHub.Domain.Users.Policies;
 
 namespace UserHub.Application;
 
@@ -17,6 +18,8 @@ public static class DependencyInjection
         services.AddTransient(
             typeof(IPipelineBehavior<,>),
             typeof(Common.Behaviors.ValidationBehavior<,>));
+
+        services.AddSingleton<PasswordPolicy>();
 
         return services;
     }

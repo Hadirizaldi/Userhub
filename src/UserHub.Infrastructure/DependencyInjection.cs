@@ -6,6 +6,10 @@ using UserHub.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Infrastructure.Persistence.Repositories;
+using UserHub.Application.Abstractions.Security;
+using UserHub.Application.Abstractions.Time;
+using UserHub.Infrastructure.Security;
+using UserHub.Infrastructure.Time;
 
 namespace UserHub.Infrastructure;
 
@@ -27,6 +31,13 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IUserRepository, UserRepository>();
+
+        services.AddSingleton<IClock, SystemClock>();
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+
+        services.AddSingleton<ReferenceDataCatalog>();
+        services.AddSingleton<IReferenceDataCatalog>(sp => sp.GetRequiredService<ReferenceDataCatalog>());
+        services.AddHostedService(sp => sp.GetRequiredService<ReferenceDataCatalog>());
 
         return services;
     }
