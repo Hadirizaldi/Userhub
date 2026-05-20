@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace UserHub.Application.Users.Queries.GetUsers;
 
-public class GetUsersValidator : AbstractValidator<GetUserQuery>
+public sealed class GetUsersValidator : AbstractValidator<GetUsersRequest>
 {
-    public GetUsersValidator ()
+    public GetUsersValidator()
     {
         RuleFor(x => x.Page).GreaterThanOrEqualTo(1);
         RuleFor(x => x.PageSize).InclusiveBetween(1, 100);

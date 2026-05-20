@@ -3,7 +3,7 @@ using UserHub.Domain.Users.Policies;
 
 namespace UserHub.Application.Users.Commands.CreateUser;
 
-public sealed class CreateUserValidator : AbstractValidator<CreateUserCommand>
+public sealed class CreateUserValidator : AbstractValidator<CreateUserRequest>
 {
     public CreateUserValidator(PasswordPolicy passwordPolicy, PhonePolicy phonePolicy)
     {
@@ -19,10 +19,10 @@ public sealed class CreateUserValidator : AbstractValidator<CreateUserCommand>
         RuleFor(x => x.Password)
             .NotEmpty()
             .Must(passwordPolicy.IsStrong)
-            .WithMessage("'Password' must be 8-100 chars and contain uppercase, lowercase, and digit.");
+            .WithMessage("'Password' must be 8-128 chars and contain uppercase, lowercase, and digit.");
 
         RuleFor(x => x.Phone)
             .Must(p => phonePolicy.IsValid(phonePolicy.Normalize(p)))
-            .WithMessage("'Phone' is invalid.");
+            .WithMessage("'Phone' must be in E.164 format (e.g. +6281234567890).");
     }
 }

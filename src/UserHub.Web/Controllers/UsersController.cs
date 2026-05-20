@@ -1,24 +1,23 @@
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using UserHub.Application.Common.Pagination;
-using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Application.Users.Commands.CreateUser;
+using UserHub.Application.Users.Queries.GetUsers;
 
 namespace UserHub.Web.Controllers;
 
 [ApiController]
 [Route("v1/users")]
 [Tags("Users")]
-public sealed class UsersController(ISender sender) : ControllerBase
+public sealed class UsersController : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<UserListItemDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> List(
-        [FromQuery] GetUserQuery query,
-        CancellationToken cancellationToken
-    )
+        [FromQuery] GetUsersRequest request,
+        [FromServices] GetUsersService service,
+        CancellationToken cancellationToken)
     {
-        var result = await sender.Send(query, cancellationToken);
+        var result = await service.HandleAsync(request, cancellationToken);
         return Ok(result);
     }
 
@@ -26,13 +25,13 @@ public sealed class UsersController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Create (
-        [FromBody] CreateUserCommand command,
-        CancellationToken cancellationToken
-    )
+    public async Task<IActionResult> Create(
+        [FromBody] CreateUserRequest request,
+        [FromServices] CreateUserService service,
+        CancellationToken cancellationToken)
     {
-        var created = await sender.Send(command, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new { id=created.Id }, created);
+        var created = await service.HandleAsync(request, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpGet("{id:int}")]
@@ -40,7 +39,6 @@ public sealed class UsersController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult GetById(int id)
     {
-
         // TODO: implement get user by id
         return NotFound();
     }
