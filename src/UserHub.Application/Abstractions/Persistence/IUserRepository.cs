@@ -1,5 +1,6 @@
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Application.Users.Commands.CreateUser;
+using UserHub.Application.Users.Commands.UpdateUser;
 
 namespace UserHub.Application.Abstractions.Persistence;
 
@@ -16,4 +17,6 @@ public interface IUserRepository
     Task<int> AddAsync(CreateUserData data, CancellationToken cancellationToken);
 
     Task<UserListItemDto?> GetByIdAsync(int id, CancellationToken cancellationToken);
+
+    Task<bool> UpdateAsync(int id, UpdateUserData data, CancellationToken cancellationToken);
 }

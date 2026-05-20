@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Users.Commands.CreateUser;
+using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Infrastructure.Persistence.Entities;
 
@@ -99,4 +100,18 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
                 u.CreatedAt
             ))
             .FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<bool> UpdateAsync(int id, UpdateUserData data, CancellationToken cancellationToken)
+    {
+        var entity = await db.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        if (entity is null) return false;
+
+        entity.Fullname = data.Fullname;
+        entity.Phone = data.Phone;
+        entity.UpdatedAt = data.UpdatedAt;
+
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
 }

@@ -3,7 +3,7 @@ using UserHub.Application.Common.Pagination;
 using UserHub.Application.Users.Commands.CreateUser;
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Application.Users.Queries.GetUserById;
-using System.Threading.Tasks;
+using UserHub.Application.Users.Commands.UpdateUser;
 
 namespace UserHub.Web.Controllers;
 
@@ -46,6 +46,20 @@ public sealed class UsersController : ControllerBase
     {
         var result = await service.HandleAsync(new GetUserByIdRequest(id), cancellationToken);
 
+        return Ok(result);
+    }
+
+    [HttpPatch("{id:int}")]
+    [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update(
+        int id,
+        [FromBody] UpdateUserRequest request,
+        [FromServices] UpdateUserService service,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.HandleAsync(id, request, cancellationToken);
         return Ok(result);
     }
 }
