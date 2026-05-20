@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using UserHub.Application.Common.Pagination;
 using UserHub.Application.Users.Commands.CreateUser;
 using UserHub.Application.Users.Queries.GetUsers;
+using UserHub.Application.Users.Queries.GetUserById;
+using System.Threading.Tasks;
 
 namespace UserHub.Web.Controllers;
 
@@ -37,9 +39,13 @@ public sealed class UsersController : ControllerBase
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(
+        int id,
+        [FromServices] GetUserByIdService service,
+        CancellationToken cancellationToken)
     {
-        // TODO: implement get user by id
-        return NotFound();
+        var result = await service.HandleAsync(new GetUserByIdRequest(id), cancellationToken);
+
+        return Ok(result);
     }
 }
