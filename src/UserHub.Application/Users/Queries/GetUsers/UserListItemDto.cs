@@ -10,5 +10,7 @@ public sealed record UserListItemDto(
     string StatusName,
     int ConditionStatusId,
     string ConditionStatusName,
+    int? RoleId,
+    string? RoleName,
     DateTime? CreatedAt
 );

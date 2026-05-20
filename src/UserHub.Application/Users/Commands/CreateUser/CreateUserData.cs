@@ -8,6 +8,7 @@ public sealed record CreateUserData(
     string? Phone,
     int StatusId,
     int ConditionStatusId,
+    int RoleId,
     DateTime CreatedAt,
     DateTime UpdatedAt
 );

@@ -4,4 +4,6 @@ public interface IReferenceDataCatalog
 {
     int ActiveUserStatusId {get;}
     int ActiveConditionStatusId {get;}
+
+    int EmployeeRoleId {get;}
 }

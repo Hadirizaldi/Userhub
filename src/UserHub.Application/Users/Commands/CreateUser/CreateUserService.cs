@@ -45,6 +45,7 @@ public sealed class CreateUserService(
             Phone: phone,
             StatusId: referenceDataCatalog.ActiveUserStatusId,
             ConditionStatusId: referenceDataCatalog.ActiveConditionStatusId,
+            RoleId: referenceDataCatalog.EmployeeRoleId,
             CreatedAt: now,
             UpdatedAt: now);
 

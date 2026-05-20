@@ -42,6 +42,8 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
                 u.Status.Name,
                 u.ConditionStatusId,
                 u.ConditionStatus.Name,
+                u.Role.Select(r => (int?)r.Id).FirstOrDefault(),
+                u.Role.Select(r => r.Name).FirstOrDefault(),
                 u.CreatedAt
             ))
             .ToListAsync(cancellationToken);
@@ -54,6 +56,10 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
 
     public async Task<int> AddAsync(CreateUserData data, CancellationToken cancellationToken)
     {
+
+        var role = await db.Roles.FindAsync([data.RoleId], cancellationToken)
+            ?? throw new InvalidOperationException($"Role with id {data.RoleId} not found.");
+
         var entity = new Users
         {
             Nip = data.Nip,
@@ -67,6 +73,7 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
             UpdatedAt = data.UpdatedAt
         };
 
+        entity.Role.Add(role);
         db.Users.Add(entity);
         await db.SaveChangesAsync(cancellationToken);
 
@@ -87,6 +94,8 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
                 u.Status.Name,
                 u.ConditionStatusId, 
                 u.ConditionStatus.Name,
+                u.Role.Select(r => (int?)r.Id).FirstOrDefault(),
+                u.Role.Select(r => r.Name).FirstOrDefault(),
                 u.CreatedAt
             ))
             .FirstOrDefaultAsync(cancellationToken);
