@@ -5,6 +5,7 @@ using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Domain.Users.Policies;
 using UserHub.Application.Users.Queries.GetUserById;
 using UserHub.Application.Users.Commands.UpdateUser;
+using UserHub.Application.Roles.Queries.LookupRoles;
 
 namespace UserHub.Application;
 
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<CreateUserService>();
         services.AddScoped<GetUserByIdService>();
         services.AddScoped<UpdateUserService>();
+        services.AddScoped<LookupRolesService>();
 
         return services;
     }

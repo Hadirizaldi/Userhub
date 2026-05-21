@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddHostedService(sp => sp.GetRequiredService<ReferenceDataCatalog>());
         
         services.AddScoped<INipGenerator, NipGenerator>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
 
         return services;
     }
