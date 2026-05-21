@@ -5,6 +5,8 @@ using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Application.Users.Queries.GetUserById;
 using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Commands.ChangeUserRole;
+using UserHub.Application.Users.Commands.ChangeUserStatus;
+using UserHub.Application.Users.Commands.ChangeUserPassword;
 
 namespace UserHub.Web.Controllers;
 
@@ -78,5 +80,34 @@ public sealed class UsersController : ControllerBase
     {
         var result = await service.HandleAsync(id, request, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpPatch("{id:int}/status")]
+    [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ChangeStatus(
+        int id,
+        [FromBody] ChangeUserStatusRequest request,
+        [FromServices] ChangeUserStatusService service,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.HandleAsync(id, request, cancellationToken);
+        return Ok(result);
+    }
+
+    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [HttpPost("{id:int}/password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ChangePassword(
+        int id,
+        [FromBody] ChangeUserPasswordRequest request,
+        [FromServices] ChangeUserPasswordService service,
+        CancellationToken cancellationToken)
+    {
+        await service.HandleAsync(id, request, cancellationToken);
+        return NoContent();
     }
 }

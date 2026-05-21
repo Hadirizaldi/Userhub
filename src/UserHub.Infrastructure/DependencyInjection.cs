@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<INipGenerator, NipGenerator>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IConditionStatusRepository, ConditionStatusRepository>();
+        services.AddScoped<IUserStatusRepository, UserStatusRepository>();
 
         return services;
     }

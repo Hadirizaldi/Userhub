@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Users.Commands.ChangeUserRole;
+using UserHub.Application.Users.Commands.ChangeUserStatus;
+using UserHub.Application.Users.Commands.ChangeUserPassword;
 using UserHub.Application.Users.Commands.CreateUser;
 using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Queries.GetUsers;
@@ -144,4 +146,31 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
         return true;
     }
 
+    public async Task<bool> ChangeStatusAsync(
+        int userId, ChangeUserStatusData data, CancellationToken cancellationToken)
+    {
+        var entity = await db.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (entity is null) return false;
+
+        if (entity.StatusId == data.StatusId) return true;
+
+        entity.StatusId = data.StatusId;
+        entity.UpdatedAt = data.UpdatedAt;
+
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> ChangePasswordAsync(
+        int userId, ChangeUserPasswordData data, CancellationToken cancellationToken)
+    {
+        var entity = await db.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (entity is null) return false;
+
+        entity.Password = data.PasswordHash;
+        entity.UpdatedAt = data.UpdatedAt;
+
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
 }

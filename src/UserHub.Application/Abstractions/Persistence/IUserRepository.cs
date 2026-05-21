@@ -2,6 +2,8 @@ using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Application.Users.Commands.CreateUser;
 using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Commands.ChangeUserRole;
+using UserHub.Application.Users.Commands.ChangeUserStatus;
+using UserHub.Application.Users.Commands.ChangeUserPassword;
 
 namespace UserHub.Application.Abstractions.Persistence;
 
@@ -24,4 +26,8 @@ public interface IUserRepository
     Task<int?> GetStatusIdAsync(int id, CancellationToken cancellationToken);
 
     Task<bool> ChangeRoleAsync(int userId, ChangeUserRoleData data, CancellationToken cancellationToken);
+
+    Task<bool> ChangeStatusAsync(int userId, ChangeUserStatusData data, CancellationToken cancellationToken);
+
+    Task<bool> ChangePasswordAsync(int userId, ChangeUserPasswordData data, CancellationToken cancellationToken);
 }
