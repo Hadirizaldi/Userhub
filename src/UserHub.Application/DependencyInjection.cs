@@ -6,6 +6,7 @@ using UserHub.Domain.Users.Policies;
 using UserHub.Application.Users.Queries.GetUserById;
 using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Roles.Queries.LookupRoles;
+using UserHub.Application.ConditionStatuses.Queries.LookupConditionStatuses;
 
 namespace UserHub.Application;
 
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<GetUserByIdService>();
         services.AddScoped<UpdateUserService>();
         services.AddScoped<LookupRolesService>();
+        services.AddScoped<LookupConditionStatusService>();
 
         return services;
     }

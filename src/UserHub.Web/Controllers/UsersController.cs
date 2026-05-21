@@ -8,7 +8,7 @@ using UserHub.Application.Users.Commands.UpdateUser;
 namespace UserHub.Web.Controllers;
 
 [ApiController]
-[Route("v1/users")]
+[Route("api/v1/users")]
 [Tags("Users")]
 public sealed class UsersController : ControllerBase
 {

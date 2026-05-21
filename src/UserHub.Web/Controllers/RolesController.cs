@@ -4,7 +4,7 @@ using UserHub.Application.Roles.Queries.LookupRoles;
 namespace UserHub.Web.Controllers;
 
 [ApiController]
-[Route("v1/roles")]
+[Route("api/v1/roles")]
 [Tags("Roles")]
 public sealed class RolesController : ControllerBase
 {
