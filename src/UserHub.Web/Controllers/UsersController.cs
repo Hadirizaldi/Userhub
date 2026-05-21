@@ -9,6 +9,7 @@ using UserHub.Application.Users.Commands.ChangeUserStatus;
 using UserHub.Application.Users.Commands.ChangeUserPassword;
 using UserHub.Application.Users.Commands.DeleteUser;
 using UserHub.Application.Users.Commands.RestoreUser;
+using UserHub.Application.Users.Commands.BulkAssignRoles;
 
 namespace UserHub.Web.Controllers;
 
@@ -136,6 +137,21 @@ public sealed class UsersController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await service.HandleAsync(id, cancellationToken);
+        return Ok(result);
+    }
+
+    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [HttpPost("role-assignments")]
+    [ProducesResponseType(typeof(BulkAssignRolesResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> BulkAssignRoles(
+        [FromBody] BulkAssignRolesRequest request,
+        [FromServices] BulkAssignRolesService service,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.HandleAsync(request, cancellationToken);
         return Ok(result);
     }
 }

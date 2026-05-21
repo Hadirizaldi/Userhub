@@ -79,12 +79,24 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("roles");
 
+            entity.HasIndex(e => e.DeletedAt, "idx_roles_deleted_at").HasFilter("(deleted_at IS NULL)");
+
             entity.HasIndex(e => e.Name, "roles_name_key").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+            entity.Property(e => e.IsSystem)
+                .HasDefaultValue(false)
+                .HasColumnName("is_system");
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
                 .HasColumnName("name");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
         });
 
         modelBuilder.Entity<UserStatuses>(entity =>

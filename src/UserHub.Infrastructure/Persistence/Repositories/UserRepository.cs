@@ -200,4 +200,58 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
         await db.SaveChangesAsync(cancellationToken);
         return true;
     }
+
+    public Task<int> CountByRoleAsync(int roleId, CancellationToken cancellationToken) =>
+        db.Users.CountAsync(u => u.Role.Any(r => r.Id == roleId), cancellationToken);
+
+    public async Task<IReadOnlyDictionary<int, int>> GetStatusByIdsAsync(
+        IReadOnlyList<int> userIds, CancellationToken cancellationToken)
+    {
+        var rows = await db.Users
+            .AsNoTracking()
+            .Where(u => userIds.Contains(u.Id))
+            .Select(u => new { u.Id, u.StatusId })
+            .ToListAsync(cancellationToken);
+
+        return rows.ToDictionary(r => r.Id, r => r.StatusId);
+    }
+
+    public async Task<int> BulkAssignRolesAsync(
+        IReadOnlyList<(int UserId, int RoleId)> assignments,
+        DateTime utcNow,
+        CancellationToken cancellationToken)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+
+        var userIds = assignments.Select(a => a.UserId).ToList();
+        var roleIds = assignments.Select(a => a.RoleId).Distinct().ToList();
+
+        var users = await db.Users
+            .Include(u => u.Role)
+            .Where(u => userIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, cancellationToken);
+
+        var roles = await db.Roles
+            .Where(r => roleIds.Contains(r.Id))
+            .ToDictionaryAsync(r => r.Id, cancellationToken);
+
+        var updated = 0;
+        foreach (var (userId, roleId) in assignments)
+        {
+            var user = users[userId];
+            var role = roles[roleId];
+
+            var existing = user.Role.ToList();
+            if (existing.Count == 1 && existing[0].Id == roleId) continue;
+
+            user.Role.Clear();
+            user.Role.Add(role);
+            user.UpdatedAt = utcNow;
+            updated++;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        await tx.CommitAsync(cancellationToken);
+        return updated;
+    }
 }

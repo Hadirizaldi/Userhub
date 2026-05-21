@@ -34,4 +34,10 @@ public interface IUserRepository
     Task<bool> SoftDeleteAsync(int userId, DateTime utcNow, CancellationToken cancellationToken);
 
     Task<bool> RestoreAsync(int userId, DateTime utcNow, CancellationToken cancellationToken);
+
+    Task<int> CountByRoleAsync(int roleId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyDictionary<int, int>> GetStatusByIdsAsync(IReadOnlyList<int> userIds, CancellationToken cancellationToken);
+
+    Task<int> BulkAssignRolesAsync(IReadOnlyList<(int UserId, int RoleId)> assignments, DateTime utcNow, CancellationToken cancellationToken);
 }

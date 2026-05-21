@@ -10,6 +10,13 @@ using UserHub.Application.Users.Commands.ChangeUserStatus;
 using UserHub.Application.Users.Commands.ChangeUserPassword;
 using UserHub.Application.Users.Commands.DeleteUser;
 using UserHub.Application.Users.Commands.RestoreUser;
+using UserHub.Application.Users.Commands.BulkAssignRoles;
+using UserHub.Application.Roles.Commands.CreateRole;
+using UserHub.Application.Roles.Commands.UpdateRole;
+using UserHub.Application.Roles.Commands.DeleteRole;
+using UserHub.Application.Roles.Queries.GetRoles;
+using UserHub.Application.Roles.Queries.GetRoleById;
+using UserHub.Domain.Roles.Policies;
 using UserHub.Application.Roles.Queries.LookupRoles;
 using UserHub.Application.ConditionStatuses.Queries.LookupConditionStatuses;
 using UserHub.Application.UserStatuses.Queries.LookupUserStatuses;
@@ -38,6 +45,14 @@ public static class DependencyInjection
         services.AddScoped<ChangeUserPasswordService>();
         services.AddScoped<DeleteUserService>();
         services.AddScoped<RestoreUserService>();
+        services.AddScoped<BulkAssignRolesService>();
+
+        services.AddSingleton<RoleProtectionPolicy>();
+        services.AddScoped<GetRolesService>();
+        services.AddScoped<GetRoleByIdService>();
+        services.AddScoped<CreateRoleService>();
+        services.AddScoped<UpdateRoleService>();
+        services.AddScoped<DeleteRoleService>();
 
         return services;
     }

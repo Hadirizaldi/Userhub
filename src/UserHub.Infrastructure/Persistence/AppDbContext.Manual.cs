@@ -8,5 +8,6 @@ public partial class AppDbContext
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Users>().HasQueryFilter(u => u.DeletedAt == null);
+        modelBuilder.Entity<Roles>().HasQueryFilter(r => r.DeletedAt == null);
     }
 }
