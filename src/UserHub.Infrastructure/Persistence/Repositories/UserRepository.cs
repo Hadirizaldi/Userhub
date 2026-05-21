@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UserHub.Application.Abstractions.Persistence;
+using UserHub.Application.Users.Commands.ChangeUserRole;
 using UserHub.Application.Users.Commands.CreateUser;
 using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Queries.GetUsers;
@@ -108,6 +109,35 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
 
         entity.Fullname = data.Fullname;
         entity.Phone = data.Phone;
+        entity.UpdatedAt = data.UpdatedAt;
+
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public Task<int?> GetStatusIdAsync(int userId, CancellationToken cancellationToken) =>
+        db.Users.AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => (int?) u.StatusId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+
+    public async Task<bool> ChangeRoleAsync(
+        int userId, ChangeUserRoleData data, CancellationToken cancellationToken)
+    {
+        var entity = await db.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if(entity is null) return false;
+
+        var role = await db.Roles.FindAsync([data.RoleId], cancellationToken);
+        if(role is null) return false;
+
+        var existingRole = entity.Role.ToList();
+        if( existingRole.Count == 1 && existingRole[0].Id == data.RoleId) return true;
+
+        entity.Role.Clear();
+        entity.Role.Add(role);
         entity.UpdatedAt = data.UpdatedAt;
 
         await db.SaveChangesAsync(cancellationToken);

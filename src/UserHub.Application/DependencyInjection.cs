@@ -5,6 +5,7 @@ using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Domain.Users.Policies;
 using UserHub.Application.Users.Queries.GetUserById;
 using UserHub.Application.Users.Commands.UpdateUser;
+using UserHub.Application.Users.Commands.ChangeUserRole;
 using UserHub.Application.Roles.Queries.LookupRoles;
 using UserHub.Application.ConditionStatuses.Queries.LookupConditionStatuses;
 
@@ -18,6 +19,7 @@ public static class DependencyInjection
 
         services.AddSingleton<PasswordPolicy>();
         services.AddSingleton<PhonePolicy>();
+        services.AddSingleton<RoleChangePolicy>();
 
         services.AddScoped<GetUsersService>();
         services.AddScoped<CreateUserService>();
@@ -25,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<UpdateUserService>();
         services.AddScoped<LookupRolesService>();
         services.AddScoped<LookupConditionStatusService>();
+        services.AddScoped<ChangeUserRoleService>();
 
         return services;
     }

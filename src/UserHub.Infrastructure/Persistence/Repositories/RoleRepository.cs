@@ -14,4 +14,7 @@ public sealed class RoleRepository(AppDbContext db) : IRoleRepository
             .Select(r => new RoleLookupDto(r.Id, r.Name))
             .ToListAsync(cancellationToken);
     }
+
+    public Task<bool> ExistsAsync(int id, CancellationToken cancellationToken) =>
+        db.Roles.AnyAsync(r => r.Id == id, cancellationToken);
 }

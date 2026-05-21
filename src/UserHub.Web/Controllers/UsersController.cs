@@ -4,6 +4,7 @@ using UserHub.Application.Users.Commands.CreateUser;
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Application.Users.Queries.GetUserById;
 using UserHub.Application.Users.Commands.UpdateUser;
+using UserHub.Application.Users.Commands.ChangeUserRole;
 
 namespace UserHub.Web.Controllers;
 
@@ -58,6 +59,22 @@ public sealed class UsersController : ControllerBase
         [FromBody] UpdateUserRequest request,
         [FromServices] UpdateUserService service,
         CancellationToken cancellationToken)
+    {
+        var result = await service.HandleAsync(id, request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPatch("{id:int}/role")]
+    [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ChangeRole(
+        int id,
+        [FromBody] ChangeUserRoleRequest request,
+        [FromServices] ChangeUserRoleService service,
+        CancellationToken cancellationToken
+    )
     {
         var result = await service.HandleAsync(id, request, cancellationToken);
         return Ok(result);

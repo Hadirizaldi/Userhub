@@ -1,6 +1,7 @@
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Application.Users.Commands.CreateUser;
 using UserHub.Application.Users.Commands.UpdateUser;
+using UserHub.Application.Users.Commands.ChangeUserRole;
 
 namespace UserHub.Application.Abstractions.Persistence;
 
@@ -19,4 +20,8 @@ public interface IUserRepository
     Task<UserListItemDto?> GetByIdAsync(int id, CancellationToken cancellationToken);
 
     Task<bool> UpdateAsync(int id, UpdateUserData data, CancellationToken cancellationToken);
+
+    Task<int?> GetStatusIdAsync(int id, CancellationToken cancellationToken);
+
+    Task<bool> ChangeRoleAsync(int userId, ChangeUserRoleData data, CancellationToken cancellationToken);
 }
