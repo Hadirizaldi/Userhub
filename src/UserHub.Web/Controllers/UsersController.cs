@@ -7,6 +7,8 @@ using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Commands.ChangeUserRole;
 using UserHub.Application.Users.Commands.ChangeUserStatus;
 using UserHub.Application.Users.Commands.ChangeUserPassword;
+using UserHub.Application.Users.Commands.DeleteUser;
+using UserHub.Application.Users.Commands.RestoreUser;
 
 namespace UserHub.Web.Controllers;
 
@@ -109,5 +111,31 @@ public sealed class UsersController : ControllerBase
     {
         await service.HandleAsync(id, request, cancellationToken);
         return NoContent();
+    }
+
+    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(
+        int id,
+        [FromServices] DeleteUserService service,
+        CancellationToken cancellationToken)
+    {
+        await service.HandleAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [HttpPost("{id:int}/restore")]
+    [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Restore(
+        int id,
+        [FromServices] RestoreUserService service,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.HandleAsync(id, cancellationToken);
+        return Ok(result);
     }
 }

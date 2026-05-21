@@ -23,7 +23,7 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
         if (!string.IsNullOrWhiteSpace(search))
         {
             var s = $"%{search.Trim()}%";
-            query = query.Where(u => 
+            query = query.Where(u =>
                 EF.Functions.ILike(u.Fullname, s) ||
                 EF.Functions.ILike(u.Email, s) ||
                 EF.Functions.ILike(u.Nip, s)
@@ -55,8 +55,9 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
         return (items, total);
     }
 
+    // Email uniqueness must include soft-deleted users (decision: deleted email cannot be reused).
     public Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken) =>
-        db.Users.AnyAsync(u => u.Email == email.ToLower(), cancellationToken);
+        db.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == email.ToLower(), cancellationToken);
 
     public async Task<int> AddAsync(CreateUserData data, CancellationToken cancellationToken)
     {
@@ -89,14 +90,14 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
             .AsNoTracking()
             .Where(u => u.Id == id)
             .Select(u => new UserListItemDto(
-                u.Id, 
-                u.Nip, 
-                u.Fullname, 
+                u.Id,
+                u.Nip,
+                u.Fullname,
                 u.Email,
                 u.Phone,
-                u.StatusId, 
+                u.StatusId,
                 u.Status.Name,
-                u.ConditionStatusId, 
+                u.ConditionStatusId,
                 u.ConditionStatus.Name,
                 u.Role.Select(r => (int?)r.Id).FirstOrDefault(),
                 u.Role.Select(r => r.Name).FirstOrDefault(),
@@ -169,6 +170,32 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
 
         entity.Password = data.PasswordHash;
         entity.UpdatedAt = data.UpdatedAt;
+
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> SoftDeleteAsync(int userId, DateTime utcNow, CancellationToken cancellationToken)
+    {
+        var entity = await db.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (entity is null) return false;
+
+        entity.DeletedAt = utcNow;
+        entity.UpdatedAt = utcNow;
+
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> RestoreAsync(int userId, DateTime utcNow, CancellationToken cancellationToken)
+    {
+        var entity = await db.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == userId && u.DeletedAt != null, cancellationToken);
+        if (entity is null) return false;
+
+        entity.DeletedAt = null;
+        entity.UpdatedAt = utcNow;
 
         await db.SaveChangesAsync(cancellationToken);
         return true;

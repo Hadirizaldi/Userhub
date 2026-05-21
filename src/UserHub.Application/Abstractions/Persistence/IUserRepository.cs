@@ -30,4 +30,8 @@ public interface IUserRepository
     Task<bool> ChangeStatusAsync(int userId, ChangeUserStatusData data, CancellationToken cancellationToken);
 
     Task<bool> ChangePasswordAsync(int userId, ChangeUserPasswordData data, CancellationToken cancellationToken);
+
+    Task<bool> SoftDeleteAsync(int userId, DateTime utcNow, CancellationToken cancellationToken);
+
+    Task<bool> RestoreAsync(int userId, DateTime utcNow, CancellationToken cancellationToken);
 }

@@ -25,6 +25,8 @@ public partial class Users
 
     public string? Phone { get; set; }
 
+    public DateTime? DeletedAt { get; set; }
+
     public virtual ConditionStatuses ConditionStatus { get; set; } = null!;
 
     public virtual ICollection<LoginLogs> LoginLogs { get; set; } = new List<LoginLogs>();

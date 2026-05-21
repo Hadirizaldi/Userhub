@@ -8,6 +8,8 @@ using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Commands.ChangeUserRole;
 using UserHub.Application.Users.Commands.ChangeUserStatus;
 using UserHub.Application.Users.Commands.ChangeUserPassword;
+using UserHub.Application.Users.Commands.DeleteUser;
+using UserHub.Application.Users.Commands.RestoreUser;
 using UserHub.Application.Roles.Queries.LookupRoles;
 using UserHub.Application.ConditionStatuses.Queries.LookupConditionStatuses;
 using UserHub.Application.UserStatuses.Queries.LookupUserStatuses;
@@ -34,6 +36,8 @@ public static class DependencyInjection
         services.AddScoped<ChangeUserRoleService>();
         services.AddScoped<ChangeUserStatusService>();
         services.AddScoped<ChangeUserPasswordService>();
+        services.AddScoped<DeleteUserService>();
+        services.AddScoped<RestoreUserService>();
 
         return services;
     }

@@ -109,6 +109,8 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.Nip, "idx_user_nip");
 
+            entity.HasIndex(e => e.DeletedAt, "idx_users_deleted_at").HasFilter("(deleted_at IS NULL)");
+
             entity.HasIndex(e => e.Email, "users_email_key").IsUnique();
 
             entity.HasIndex(e => e.Nip, "users_nip_key").IsUnique();
@@ -118,6 +120,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("created_at");
+            entity.Property(e => e.DeletedAt).HasColumnName("deleted_at");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasColumnName("email");
