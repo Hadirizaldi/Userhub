@@ -171,4 +171,26 @@ public sealed class SessionRepository(AppDbContext db) : ISessionRepository
                 s.LastUsedAt,
                 s.CreatedAt))
             .ToListAsync(cancellationToken);
+
+    public async Task<(int RefreshTokensDeleted, int SessionsDeleted)> DeleteOldAsync (
+        DateTime refreshTokenExpiredCutoff,
+        DateTime refreshTokenRevokedCutoff,
+        DateTime sessionRevokedCutoff,
+        CancellationToken cancellationToken
+    )
+    {
+        var tokensDeleted = await db.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(t => t.ExpiresAt < refreshTokenExpiredCutoff || (t.RevokedAt != null && t.RevokedAt < refreshTokenRevokedCutoff))
+            .ExecuteDeleteAsync(cancellationToken);
+
+        var sessionsDeleted = await db.Sessions
+            .IgnoreQueryFilters()
+            .Where(s => s.RevokedAt != null 
+                    && s.RevokedAt < sessionRevokedCutoff 
+                    && !s.RefreshTokens.Any())
+            .ExecuteDeleteAsync(cancellationToken);
+
+        return (tokensDeleted, sessionsDeleted);
+    }
 }

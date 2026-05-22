@@ -2,6 +2,9 @@ using UserHub.Application;
 using UserHub.Infrastructure;
 using UserHub.Infrastructure.Persistence;
 using UserHub.Web;
+using UserHub.Web.Auth;
+using UserHub.Web.Extensions;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +22,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 if (!app.Environment.IsDevelopment())
 {
@@ -34,4 +41,7 @@ app.MapGet("/db/ping", async (AppDbContext db) =>
         : Results.Problem("cannot connect to database"));
 
 app.MapControllers();
+
+app.UseRecurringJobs();
+
 app.Run();

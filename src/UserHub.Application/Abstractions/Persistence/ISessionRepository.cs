@@ -17,4 +17,11 @@ public interface ISessionRepository
     Task RevokeAllForUserAsync(int userId, DateTime utcNow, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<SessionListItemDto>> GetActiveByUserAsync(int userId, CancellationToken cancellationToken);
+
+    Task<(int RefreshTokensDeleted, int SessionsDeleted)> DeleteOldAsync(
+        DateTime refreshTokenExpiredCutoff,
+        DateTime refreshTokenRevokedCutoff,
+        DateTime sessionRevokedCutoff,
+        CancellationToken cancellationToken
+    );
 }

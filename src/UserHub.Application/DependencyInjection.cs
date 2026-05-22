@@ -28,6 +28,7 @@ using UserHub.Application.Auth.Commands.LogoutAll;
 using UserHub.Application.Auth.Queries.GetMe;
 using UserHub.Application.Auth.Queries.GetSessions;
 using UserHub.Application.Auth.Commands.Refresh;
+using UserHub.Application.Auth.Jobs;
 
 namespace UserHub.Application;
 
@@ -75,6 +76,7 @@ public static class DependencyInjection
         services.AddScoped<GetMeService>();
         services.AddScoped<GetSessionsService>();
         services.AddScoped<RefreshTokenService>();
+        services.AddScoped<TokenCleanupJob>();
 
         return services;
     }
