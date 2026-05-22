@@ -13,14 +13,15 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 
 if (!app.Environment.IsDevelopment())
 {
