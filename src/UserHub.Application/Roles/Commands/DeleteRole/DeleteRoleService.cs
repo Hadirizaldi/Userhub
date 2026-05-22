@@ -1,5 +1,6 @@
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Roles.Policies;
 
@@ -22,7 +23,7 @@ public sealed class DeleteRoleService(
         if (userCount > 0)
         {
             throw new ConflictException(
-                "ROLE_IN_USE",
+                ErrorCodes.RoleInUse,
                 $"Cannot delete role: {userCount} user(s) still assigned. Reassign them first.");
         }
 

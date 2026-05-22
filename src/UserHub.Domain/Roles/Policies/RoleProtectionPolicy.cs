@@ -1,3 +1,4 @@
+using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 
 namespace UserHub.Domain.Roles.Policies;
@@ -9,7 +10,7 @@ public sealed class RoleProtectionPolicy
         if (isSystem)
         {
             throw new ForbiddenException(
-                "ROLE_IS_SYSTEM",
+                ErrorCodes.RoleIsSystem,
                 "System roles cannot be modified or deleted.");
         }
     }

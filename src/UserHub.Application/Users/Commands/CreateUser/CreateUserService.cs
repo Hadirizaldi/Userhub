@@ -3,6 +3,7 @@ using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Security;
 using UserHub.Application.Abstractions.Time;
 using UserHub.Application.Users.Queries.GetUsers;
+using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Users.Policies;
 
@@ -28,7 +29,7 @@ public sealed class CreateUserService(
         if (await userRepository.ExistsByEmailAsync(email, cancellationToken))
         {
             throw new ConflictException(
-                "EMAIL_ALREADY_TAKEN",
+                ErrorCodes.EmailAlreadyTaken,
                 $"A user with email '{email}' already exists.");
         }
 

@@ -3,6 +3,7 @@ using UserHub.Application.Abstractions.Auth;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
 using UserHub.Application.Auth;
+using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using Microsoft.Extensions.Options;
 using UserHub.Application.Abstractions.Security;
@@ -33,10 +34,10 @@ public sealed class LoginService(
         var creds = await userRepository.GetCredentialsByEmailAsync(email, cancellationToken);
 
         if (creds is null || !passwordHasher.Verify(request.Password, creds.PasswordHash))
-            throw new UnauthorizedException("INVALID_CREDENTIALS", "Invalid email or password.");
+            throw new UnauthorizedException(ErrorCodes.InvalidCredentials, "Invalid email or password.");
 
         if(creds.StatusId != referenceDataCatalog.ActiveUserStatusId)
-            throw new UnauthorizedException("USER_INACTIVE", "Account is not active.");
+            throw new UnauthorizedException(ErrorCodes.UserInactive, "Account is not active.");
 
         var (plaintext, hash) = refreshTokenGenerator.Generate();
         var now = clock.UtcNow;

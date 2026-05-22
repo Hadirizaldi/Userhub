@@ -3,6 +3,7 @@ using UserHub.Application.Abstractions.Auth;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
 using UserHub.Application.Users.Queries.GetUsers;
+using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Users.Policies;
 
@@ -25,7 +26,7 @@ public sealed class UpdateUserService (
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
         if (currentUser.UserId != id && !currentUser.IsAdmin)
-            throw new ForbiddenException("FORBIDDEN", "You can only update your own profile.");
+            throw new ForbiddenException(ErrorCodes.Forbidden, "You can only update your own profile.");
 
         var data = new UpdateUserData(
             Fullname: request.Fullname.Trim(),

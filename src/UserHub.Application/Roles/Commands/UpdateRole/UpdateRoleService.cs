@@ -2,6 +2,7 @@ using FluentValidation;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
 using UserHub.Application.Roles.Queries.GetRoleById;
+using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Roles.Policies;
 
@@ -29,7 +30,7 @@ public sealed class UpdateRoleService(
             && await roleRepository.ExistsByNameAsync(name, cancellationToken))
         {
             throw new ConflictException(
-                "ROLE_NAME_TAKEN",
+                ErrorCodes.RoleNameTaken,
                 $"A role with name '{name}' already exists.");
         }
 

@@ -4,6 +4,7 @@ using UserHub.Application.Abstractions.Auth;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
 using UserHub.Application.Auth;
+using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 
 namespace UserHub.Application.Auth.Commands.Refresh;
@@ -28,24 +29,24 @@ public sealed class RefreshTokenService(
 
         var lookup = await sessionRepository.GetByRefreshTokenHashAsync(hash, cancellationToken);
         if (lookup is null)
-            throw new UnauthorizedException("INVALID_REFRESH_TOKEN", "Invalid refresh token.");
+            throw new UnauthorizedException(ErrorCodes.InvalidRefreshToken, "Invalid refresh token.");
 
         var now = clock.UtcNow;
 
         if(lookup.TokenRevokedAt is not null)
         {
             await sessionRepository.RevokeAllForUserAsync(lookup.UserId, now, cancellationToken);
-            throw new UnauthorizedException("INVALID_REFRESH_TOKEN", "Refresh token reuse detected. All sessions revoked.");
+            throw new UnauthorizedException(ErrorCodes.InvalidRefreshToken, "Refresh token reuse detected. All sessions revoked.");
         }
 
         if(lookup.SessionRevokedAt is not null)
         {
-            throw new UnauthorizedException("INVALID_REFRESH_TOKEN", "Session has been revoked.");
+            throw new UnauthorizedException(ErrorCodes.InvalidRefreshToken, "Session has been revoked.");
         }
 
         if(lookup.TokenExpiresAt <= now)
         {
-            throw new UnauthorizedException("REFRESH_TOKEN_EXPIRED", "Refresh token has expired.");
+            throw new UnauthorizedException(ErrorCodes.RefreshTokenExpired, "Refresh token has expired.");
         }
 
         var (newPlaintext, newHash) = refreshTokenGenerator.Generate();

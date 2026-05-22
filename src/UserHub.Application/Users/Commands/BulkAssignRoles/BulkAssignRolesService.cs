@@ -1,6 +1,7 @@
 using FluentValidation;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Users.Policies;
 
@@ -27,7 +28,7 @@ public sealed class BulkAssignRolesService(
         if (missingUserIds.Count > 0)
         {
             throw new NotFoundException(
-                "USERS_NOT_FOUND",
+                ErrorCodes.UsersNotFound,
                 $"User(s) not found: [{string.Join(", ", missingUserIds)}].");
         }
 
@@ -36,7 +37,7 @@ public sealed class BulkAssignRolesService(
         if (missingRoleIds.Count > 0)
         {
             throw new NotFoundException(
-                "ROLES_NOT_FOUND",
+                ErrorCodes.RolesNotFound,
                 $"Role(s) not found: [{string.Join(", ", missingRoleIds)}].");
         }
 
