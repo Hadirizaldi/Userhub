@@ -15,6 +15,7 @@ namespace UserHub.Web.Controllers;
 [Tags("Auth")]
 public sealed class AuthController : ControllerBase
 {
+    [AllowAnonymous]
     [HttpPost("login")]
     [ProducesResponseType(typeof(LoginResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -29,6 +30,7 @@ public sealed class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("refresh")]
     [ProducesResponseType(typeof(RefreshResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -42,6 +44,7 @@ public sealed class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("logout")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

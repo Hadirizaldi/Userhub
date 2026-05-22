@@ -7,7 +7,6 @@ using UserHub.Domain.Common.Exceptions;
 namespace UserHub.Web.Common.Exceptions;
 
 public sealed class GlobalExceptionHandler(
-    IProblemDetailsService problemDetailsService,
     ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
@@ -21,6 +20,7 @@ public sealed class GlobalExceptionHandler(
             logger.LogError(exception, "Unhandled exception at {Path}", httpContext.Request.Path);
 
         httpContext.Response.StatusCode = status;
+        httpContext.Response.ContentType = "application/problem+json";
 
         var problem = new ProblemDetails
         {
@@ -35,12 +35,8 @@ public sealed class GlobalExceptionHandler(
         if (errors is not null) problem.Extensions["errors"] = errors;
         problem.Extensions["traceId"] = httpContext.TraceIdentifier;
 
-        return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
-        {
-            HttpContext = httpContext,
-            ProblemDetails = problem,
-            Exception = exception
-        });
+        await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);
+        return true;
     }
 
     private static (int Status, string Title, string Detail, string? Code, object? Errors) Map(Exception ex) =>

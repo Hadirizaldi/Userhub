@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using UserHub.Application.Abstractions.Auth;
+using UserHub.Domain.Roles;
 
 namespace UserHub.Web.Auth;
 
@@ -18,4 +19,7 @@ public sealed class CurrentUserAccessor(IHttpContextAccessor accessor) : ICurren
             return id;
         }
     }
+
+    public bool IsAdmin =>
+        accessor.HttpContext?.User.IsInRole(RoleNames.Admin) ?? false;
 }

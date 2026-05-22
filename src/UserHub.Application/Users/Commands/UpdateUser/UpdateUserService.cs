@@ -1,4 +1,5 @@
 using FluentValidation;
+using UserHub.Application.Abstractions.Auth;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
 using UserHub.Application.Users.Queries.GetUsers;
@@ -11,7 +12,8 @@ public sealed class UpdateUserService (
     IValidator<UpdateUserRequest> validator,
     IUserRepository userRepository,
     IClock clock,
-    PhonePolicy phonePolicy
+    PhonePolicy phonePolicy,
+    ICurrentUserAccessor currentUser
 )
 {
     public async Task<UserListItemDto> HandleAsync(
@@ -21,6 +23,9 @@ public sealed class UpdateUserService (
     )
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
+
+        if (currentUser.UserId != id && !currentUser.IsAdmin)
+            throw new ForbiddenException("FORBIDDEN", "You can only update your own profile.");
 
         var data = new UpdateUserData(
             Fullname: request.Fullname.Trim(),

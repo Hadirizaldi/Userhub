@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserHub.Application.Common.Pagination;
 using UserHub.Application.Roles.Commands.CreateRole;
@@ -6,6 +7,7 @@ using UserHub.Application.Roles.Commands.UpdateRole;
 using UserHub.Application.Roles.Queries.GetRoleById;
 using UserHub.Application.Roles.Queries.GetRoles;
 using UserHub.Application.Roles.Queries.LookupRoles;
+using UserHub.Web.Auth;
 
 namespace UserHub.Web.Controllers;
 
@@ -47,7 +49,7 @@ public sealed class RolesController : ControllerBase
         return Ok(result);
     }
 
-    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpPost]
     [ProducesResponseType(typeof(RoleDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -61,7 +63,7 @@ public sealed class RolesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpPatch("{id:int}")]
     [ProducesResponseType(typeof(RoleDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -78,7 +80,7 @@ public sealed class RolesController : ControllerBase
         return Ok(result);
     }
 
-    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

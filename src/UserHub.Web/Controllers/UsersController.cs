@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserHub.Application.Common.Pagination;
 using UserHub.Application.Users.Commands.CreateUser;
@@ -10,6 +11,7 @@ using UserHub.Application.Users.Commands.ChangeUserPassword;
 using UserHub.Application.Users.Commands.DeleteUser;
 using UserHub.Application.Users.Commands.RestoreUser;
 using UserHub.Application.Users.Commands.BulkAssignRoles;
+using UserHub.Web.Auth;
 
 namespace UserHub.Web.Controllers;
 
@@ -29,6 +31,7 @@ public sealed class UsersController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpPost]
     [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -58,6 +61,7 @@ public sealed class UsersController : ControllerBase
     [HttpPatch("{id:int}")]
     [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
         int id,
@@ -69,6 +73,7 @@ public sealed class UsersController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpPatch("{id:int}/role")]
     [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -85,6 +90,7 @@ public sealed class UsersController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpPatch("{id:int}/status")]
     [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -99,7 +105,7 @@ public sealed class UsersController : ControllerBase
         return Ok(result);
     }
 
-    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpPost("{id:int}/password")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -114,7 +120,7 @@ public sealed class UsersController : ControllerBase
         return NoContent();
     }
 
-    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -127,7 +133,7 @@ public sealed class UsersController : ControllerBase
         return NoContent();
     }
 
-    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpPost("{id:int}/restore")]
     [ProducesResponseType(typeof(UserListItemDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -140,7 +146,7 @@ public sealed class UsersController : ControllerBase
         return Ok(result);
     }
 
-    // TODO: [Authorize(Roles = "admin")] when auth is implemented
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpPost("role-assignments")]
     [ProducesResponseType(typeof(BulkAssignRolesResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
