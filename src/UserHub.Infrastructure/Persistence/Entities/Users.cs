@@ -31,6 +31,8 @@ public partial class Users
 
     public virtual ICollection<LoginLogs> LoginLogs { get; set; } = new List<LoginLogs>();
 
+    public virtual ICollection<Sessions> Sessions { get; set; } = new List<Sessions>();
+
     public virtual UserStatuses Status { get; set; } = null!;
 
     public virtual ICollection<Roles> Role { get; set; } = new List<Roles>();

@@ -20,7 +20,11 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<LoginLogs> LoginLogs { get; set; }
 
+    public virtual DbSet<RefreshTokens> RefreshTokens { get; set; }
+
     public virtual DbSet<Roles> Roles { get; set; }
+
+    public virtual DbSet<Sessions> Sessions { get; set; }
 
     public virtual DbSet<UserStatuses> UserStatuses { get; set; }
 
@@ -60,17 +64,39 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.IsLoggedIn)
                 .HasDefaultValue(false)
                 .HasColumnName("is_logged_in");
-            entity.Property(e => e.LoginAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("login_at");
-            entity.Property(e => e.LogoutAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("logout_at");
+            entity.Property(e => e.LoginAt).HasColumnName("login_at");
+            entity.Property(e => e.LogoutAt).HasColumnName("logout_at");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
             entity.HasOne(d => d.User).WithMany(p => p.LoginLogs)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("fk_log_user");
+        });
+
+        modelBuilder.Entity<RefreshTokens>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("refresh_tokens_pkey");
+
+            entity.ToTable("refresh_tokens");
+
+            entity.HasIndex(e => e.SessionId, "idx_refresh_tokens_session_id");
+
+            entity.HasIndex(e => e.TokenHash, "refresh_tokens_token_hash_key").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");
+            entity.Property(e => e.RevokedAt).HasColumnName("revoked_at");
+            entity.Property(e => e.SessionId).HasColumnName("session_id");
+            entity.Property(e => e.TokenHash)
+                .HasMaxLength(128)
+                .HasColumnName("token_hash");
+
+            entity.HasOne(d => d.Session).WithMany(p => p.RefreshTokens)
+                .HasForeignKey(d => d.SessionId)
+                .HasConstraintName("fk_refresh_token_session");
         });
 
         modelBuilder.Entity<Roles>(entity =>
@@ -97,6 +123,41 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("updated_at");
+        });
+
+        modelBuilder.Entity<Sessions>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("sessions_pkey");
+
+            entity.ToTable("sessions");
+
+            entity.HasIndex(e => e.RevokedAt, "idx_sessions_revoked_at");
+
+            entity.HasIndex(e => e.UserId, "idx_sessions_user_id");
+
+            entity.HasIndex(e => e.LoginLogId, "sessions_login_log_id_key").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.IpAddress)
+                .HasMaxLength(45)
+                .HasColumnName("ip_address");
+            entity.Property(e => e.LastUsedAt).HasColumnName("last_used_at");
+            entity.Property(e => e.LoginLogId).HasColumnName("login_log_id");
+            entity.Property(e => e.RevokedAt).HasColumnName("revoked_at");
+            entity.Property(e => e.UserAgent).HasColumnName("user_agent");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.LoginLog).WithOne(p => p.Sessions)
+                .HasForeignKey<Sessions>(d => d.LoginLogId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_session_login_log");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Sessions)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_session_user");
         });
 
         modelBuilder.Entity<UserStatuses>(entity =>

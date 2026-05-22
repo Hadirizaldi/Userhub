@@ -10,6 +10,8 @@ public sealed class ChangeUserStatusService(
     IValidator<ChangeUserStatusRequest> validator,
     IUserRepository userRepository,
     IUserStatusRepository userStatusRepository,
+    ISessionRepository sessionRepository,
+    IReferenceDataCatalog referenceDataCatalog,
     IClock clock)
 {
     public async Task<UserListItemDto> HandleAsync(
@@ -23,6 +25,8 @@ public sealed class ChangeUserStatusService(
         var data = new ChangeUserStatusData(request.StatusId, clock.UtcNow);
         var success = await userRepository.ChangeStatusAsync(id, data, cancellationToken);
         if (!success) throw NotFoundException.For("User", id);
+        if (request.StatusId != referenceDataCatalog.ActiveUserStatusId)
+            await sessionRepository.RevokeAllForUserAsync(id, clock.UtcNow, cancellationToken);
 
         return await userRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("User not found after status change.");

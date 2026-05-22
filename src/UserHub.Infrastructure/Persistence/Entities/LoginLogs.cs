@@ -15,5 +15,7 @@ public partial class LoginLogs
 
     public bool? IsLoggedIn { get; set; }
 
+    public virtual Sessions? Sessions { get; set; }
+
     public virtual Users User { get; set; } = null!;
 }

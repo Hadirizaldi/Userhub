@@ -4,6 +4,7 @@ using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Commands.ChangeUserRole;
 using UserHub.Application.Users.Commands.ChangeUserStatus;
 using UserHub.Application.Users.Commands.ChangeUserPassword;
+using UserHub.Application.Auth.Commands.Login;
 
 namespace UserHub.Application.Abstractions.Persistence;
 
@@ -40,4 +41,6 @@ public interface IUserRepository
     Task<IReadOnlyDictionary<int, int>> GetStatusByIdsAsync(IReadOnlyList<int> userIds, CancellationToken cancellationToken);
 
     Task<int> BulkAssignRolesAsync(IReadOnlyList<(int UserId, int RoleId)> assignments, DateTime utcNow, CancellationToken cancellationToken);
+
+    Task<UserCredentials?> GetCredentialsByEmailAsync(string email, CancellationToken cancellationToken);
 }

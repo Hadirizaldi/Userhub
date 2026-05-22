@@ -57,6 +57,7 @@ public sealed class GlobalExceptionHandler(
 
             NotFoundException nf => (StatusCodes.Status404NotFound, "Resource not found", nf.Message, nf.Code, null),
             ConflictException cf => (StatusCodes.Status409Conflict, "Resource conflict", cf.Message, cf.Code, null),
+            UnauthorizedException ua => (StatusCodes.Status401Unauthorized, "Unauthorized", ua.Message, ua.Code, null),
             ForbiddenException fb => (StatusCodes.Status403Forbidden, "Access denied", fb.Message, fb.Code, null),
 
             _ => (StatusCodes.Status500InternalServerError, "Internal server error", "An unexpected error occurred. Please contact support with the traceId.", null, null)

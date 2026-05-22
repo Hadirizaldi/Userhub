@@ -10,6 +10,8 @@ using UserHub.Application.Abstractions.Security;
 using UserHub.Application.Abstractions.Time;
 using UserHub.Infrastructure.Security;
 using UserHub.Infrastructure.Time;
+using UserHub.Infrastructure.Auth;
+using UserHub.Application.Abstractions.Auth;
 
 namespace UserHub.Infrastructure;
 
@@ -34,6 +36,8 @@ public static class DependencyInjection
 
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddSingleton<IJwtService, JwtService>();
+        services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
 
         services.AddSingleton<ReferenceDataCatalog>();
         services.AddSingleton<IReferenceDataCatalog>(sp => sp.GetRequiredService<ReferenceDataCatalog>());
@@ -43,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IConditionStatusRepository, ConditionStatusRepository>();
         services.AddScoped<IUserStatusRepository, UserStatusRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
 
         return services;
     }

@@ -7,6 +7,7 @@ using UserHub.Application.Users.Commands.CreateUser;
 using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Infrastructure.Persistence.Entities;
+using UserHub.Application.Auth.Commands.Login;
 
 namespace UserHub.Infrastructure.Persistence.Repositories;
 
@@ -254,4 +255,16 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
         await tx.CommitAsync(cancellationToken);
         return updated;
     }
+
+    public Task<UserCredentials?> GetCredentialsByEmailAsync(string email, CancellationToken cancellationToken) =>
+        db.Users
+            .AsNoTracking()
+            .Where(u => u.Email == email.ToLower())
+            .Select(u => new UserCredentials(
+                u.Id,
+                u.Email,
+                u.Password,
+                u.StatusId,
+                u.Role.Select(r => r.Name).FirstOrDefault()))
+            .FirstOrDefaultAsync(cancellationToken);
 }

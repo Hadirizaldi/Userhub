@@ -10,6 +10,7 @@ public sealed class ChangeUserPasswordService(
     IValidator<ChangeUserPasswordRequest> validator,
     IUserRepository userRepository,
     IPasswordHasher passwordHasher,
+    ISessionRepository sessionRepository,
     IClock clock)
 {
     public async Task HandleAsync(
@@ -23,5 +24,8 @@ public sealed class ChangeUserPasswordService(
 
         var success = await userRepository.ChangePasswordAsync(id, data, cancellationToken);
         if (!success) throw NotFoundException.For("User", id);
+
+        await sessionRepository.RevokeAllForUserAsync(id, clock.UtcNow, cancellationToken);
+
     }
 }

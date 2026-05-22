@@ -20,13 +20,28 @@ using UserHub.Domain.Roles.Policies;
 using UserHub.Application.Roles.Queries.LookupRoles;
 using UserHub.Application.ConditionStatuses.Queries.LookupConditionStatuses;
 using UserHub.Application.UserStatuses.Queries.LookupUserStatuses;
+using UserHub.Application.Auth;
+using Microsoft.Extensions.Configuration;
+using UserHub.Application.Auth.Commands.Login;
+using UserHub.Application.Auth.Commands.Logout;
+using UserHub.Application.Auth.Commands.LogoutAll;
+using UserHub.Application.Auth.Queries.GetMe;
+using UserHub.Application.Auth.Queries.GetSessions;
 
 namespace UserHub.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    public static IServiceCollection AddApplication(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
+
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
 
         services.AddSingleton<PasswordPolicy>();
@@ -53,6 +68,11 @@ public static class DependencyInjection
         services.AddScoped<CreateRoleService>();
         services.AddScoped<UpdateRoleService>();
         services.AddScoped<DeleteRoleService>();
+        services.AddScoped<LoginService>();
+        services.AddScoped<LogoutService>();
+        services.AddScoped<LogoutAllService>();
+        services.AddScoped<GetMeService>();
+        services.AddScoped<GetSessionsService>();
 
         return services;
     }
