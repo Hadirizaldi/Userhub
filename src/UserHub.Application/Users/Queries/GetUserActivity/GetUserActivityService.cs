@@ -20,6 +20,7 @@ public sealed class GetUserActivityService(
             request.Page,
             request.PageSize,
             request.Search,
+            request.IsLoggedIn,
             cancellationToken
         );
 

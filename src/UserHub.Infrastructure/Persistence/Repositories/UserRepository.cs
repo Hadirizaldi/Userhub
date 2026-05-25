@@ -273,6 +273,7 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
         int Page,
         int PageSize,
         string? Search,
+        bool? IsLoggedIn,
         CancellationToken cancellationToken
     )
     {
@@ -286,6 +287,15 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
                 EF.Functions.ILike(u.Email, s) ||
                 EF.Functions.ILike(u.Nip, s)
             );
+        }
+
+        if(IsLoggedIn.HasValue)
+        {
+            query = query.Where(u =>
+                (u.LoginLogs
+                .OrderByDescending(l => l.LoginAt)
+                .Select(l => l.IsLoggedIn)
+                .FirstOrDefault() ?? false) == IsLoggedIn.Value);
         }
 
         var total = await query.CountAsync(cancellationToken);

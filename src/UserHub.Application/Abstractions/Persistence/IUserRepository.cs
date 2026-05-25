@@ -49,5 +49,6 @@ public interface IUserRepository
         int page, 
         int pageSize,
         string? search,
+        bool? IsLoggedIn,
         CancellationToken cancellationToken);
 }
