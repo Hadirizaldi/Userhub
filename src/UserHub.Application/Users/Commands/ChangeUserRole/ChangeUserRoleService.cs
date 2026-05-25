@@ -1,6 +1,8 @@
 using FluentValidation;
+using UserHub.Application.Abstractions.Audit;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Application.AuditLogs;
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Users.Policies;
@@ -14,7 +16,8 @@ public sealed class ChangeUserRoleService(
     IRoleRepository roleRepository,
     IReferenceDataCatalog referenceDataCatalog,
     IClock clock,
-    RoleChangePolicy roleChangePolicy )
+    RoleChangePolicy roleChangePolicy,
+    IAuditLogger auditLogger )
 {
     public async Task<UserListItemDto> HandleAsync(
         int id, ChangeUserRoleRequest request, CancellationToken cancellationToken)
@@ -34,10 +37,19 @@ public sealed class ChangeUserRoleService(
             UpdatedAt: clock.UtcNow
         );
 
+        var before = await userRepository.GetByIdAsync(id, cancellationToken);
+
         var success = await userRepository.ChangeRoleAsync(id, data, cancellationToken);
         if (!success) throw NotFoundException.For("User", id);
 
-        return await userRepository.GetByIdAsync(id, cancellationToken)
+        var dto = await userRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("User not found after role change.");
+
+        await auditLogger.LogAsync(
+            new AuditEntry("user.change_role", "user", id,
+                new { role = new { from = before?.RoleName, to = dto.RoleName } }),
+            cancellationToken);
+
+        return dto;
     }
 }

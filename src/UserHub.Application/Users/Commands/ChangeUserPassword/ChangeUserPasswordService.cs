@@ -1,7 +1,9 @@
 using FluentValidation;
+using UserHub.Application.Abstractions.Audit;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Security;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Application.AuditLogs;
 using UserHub.Domain.Common.Exceptions;
 
 namespace UserHub.Application.Users.Commands.ChangeUserPassword;
@@ -11,7 +13,8 @@ public sealed class ChangeUserPasswordService(
     IUserRepository userRepository,
     IPasswordHasher passwordHasher,
     ISessionRepository sessionRepository,
-    IClock clock)
+    IClock clock,
+    IAuditLogger auditLogger)
 {
     public async Task HandleAsync(
         int id, ChangeUserPasswordRequest request, CancellationToken cancellationToken)
@@ -27,5 +30,7 @@ public sealed class ChangeUserPasswordService(
 
         await sessionRepository.RevokeAllForUserAsync(id, clock.UtcNow, cancellationToken);
 
+        await auditLogger.LogAsync(
+            new AuditEntry("user.change_password", "user", id), cancellationToken);
     }
 }

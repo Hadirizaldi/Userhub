@@ -129,14 +129,17 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(
         int id,
+        [FromQuery] DeleteUserRequest request,
         [FromServices] DeleteUserService service,
         CancellationToken cancellationToken)
     {
-        await service.HandleAsync(id, cancellationToken);
+        await service.HandleAsync(id, request, cancellationToken);
         return NoContent();
     }
 
     [Authorize(Policy = AuthPolicies.AdminOnly)]
+    [Obsolete("Use DELETE /api/v1/users/{id}?force=true instead.")]
+    [ApiExplorerSettings(IgnoreApi = false)]
     [HttpDelete("{id:int}/permanent")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -16,6 +16,8 @@ public partial class AppDbContext : DbContext
     {
     }
 
+    public virtual DbSet<AuditLogs> AuditLogs { get; set; }
+
     public virtual DbSet<ConditionStatuses> ConditionStatuses { get; set; }
 
     public virtual DbSet<LoginLogs> LoginLogs { get; set; }
@@ -37,6 +39,45 @@ public partial class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("pgcrypto");
+
+        modelBuilder.Entity<AuditLogs>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("audit_logs_pkey");
+
+            entity.ToTable("audit_logs");
+
+            entity.HasIndex(e => e.Action, "idx_audit_logs_action");
+
+            entity.HasIndex(e => e.ActorUserId, "idx_audit_logs_actor");
+
+            entity.HasIndex(e => e.CreatedAt, "idx_audit_logs_created_at").IsDescending();
+
+            entity.HasIndex(e => new { e.EntityType, e.EntityId }, "idx_audit_logs_entity");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Action)
+                .HasMaxLength(50)
+                .HasColumnName("action");
+            entity.Property(e => e.ActorUserId).HasColumnName("actor_user_id");
+            entity.Property(e => e.Changes)
+                .HasColumnType("jsonb")
+                .HasColumnName("changes");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EntityId).HasColumnName("entity_id");
+            entity.Property(e => e.EntityType)
+                .HasMaxLength(50)
+                .HasColumnName("entity_type");
+            entity.Property(e => e.IpAddress)
+                .HasMaxLength(45)
+                .HasColumnName("ip_address");
+
+            entity.HasOne(d => d.ActorUser).WithMany(p => p.AuditLogs)
+                .HasForeignKey(d => d.ActorUserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("fk_audit_actor");
+        });
 
         modelBuilder.Entity<ConditionStatuses>(entity =>
         {

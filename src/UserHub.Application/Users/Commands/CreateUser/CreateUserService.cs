@@ -1,7 +1,9 @@
 using FluentValidation;
+using UserHub.Application.Abstractions.Audit;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Security;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Application.AuditLogs;
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
@@ -16,7 +18,8 @@ public sealed class CreateUserService(
     IPasswordHasher passwordHasher,
     IReferenceDataCatalog referenceDataCatalog,
     IClock clock,
-    PhonePolicy phonePolicy)
+    PhonePolicy phonePolicy,
+    IAuditLogger auditLogger)
 {
     public async Task<UserListItemDto> HandleAsync(
         CreateUserRequest request,
@@ -51,6 +54,9 @@ public sealed class CreateUserService(
             UpdatedAt: now);
 
         var id = await userRepository.AddAsync(data, cancellationToken);
+
+        await auditLogger.LogAsync(
+            new AuditEntry("user.create", "user", id), cancellationToken);
 
         var created = await userRepository.GetByIdAsync(id, cancellationToken);
         return created ?? throw new InvalidOperationException("Newly created user not found.");

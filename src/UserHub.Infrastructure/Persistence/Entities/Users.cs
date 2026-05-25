@@ -27,6 +27,8 @@ public partial class Users
 
     public DateTime? DeletedAt { get; set; }
 
+    public virtual ICollection<AuditLogs> AuditLogs { get; set; } = new List<AuditLogs>();
+
     public virtual ConditionStatuses ConditionStatus { get; set; } = null!;
 
     public virtual ICollection<LoginLogs> LoginLogs { get; set; } = new List<LoginLogs>();

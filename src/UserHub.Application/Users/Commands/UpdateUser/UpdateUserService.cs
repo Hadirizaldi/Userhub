@@ -1,7 +1,9 @@
 using FluentValidation;
+using UserHub.Application.Abstractions.Audit;
 using UserHub.Application.Abstractions.Auth;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Application.AuditLogs;
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
@@ -14,7 +16,8 @@ public sealed class UpdateUserService (
     IUserRepository userRepository,
     IClock clock,
     PhonePolicy phonePolicy,
-    ICurrentUserAccessor currentUser
+    ICurrentUserAccessor currentUser,
+    IAuditLogger auditLogger
 )
 {
     public async Task<UserListItemDto> HandleAsync(
@@ -36,6 +39,11 @@ public sealed class UpdateUserService (
 
         var updated = await userRepository.UpdateAsync(id, data, cancellationToken);
         if (!updated) throw NotFoundException.For("User", id);
+
+        await auditLogger.LogAsync(
+            new AuditEntry("user.update", "user", id,
+                new { fullname = data.Fullname, phone = data.Phone }),
+            cancellationToken);
 
         var dto = await userRepository.GetByIdAsync(id, cancellationToken);
         return dto ?? throw new InvalidOperationException("User updated but not found.");

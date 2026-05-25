@@ -20,6 +20,17 @@ public sealed class CurrentUserAccessor(IHttpContextAccessor accessor) : ICurren
         }
     }
 
+    public int? UserIdOrNull
+    {
+        get
+        {
+            var raw = accessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? accessor.HttpContext?.User.FindFirstValue("sub");
+
+            return int.TryParse(raw, out var id) ? id : null;
+        }
+    }
+
     public bool IsAdmin =>
         accessor.HttpContext?.User.IsInRole(RoleNames.Admin) ?? false;
 }
