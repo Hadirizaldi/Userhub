@@ -14,6 +14,7 @@ using UserHub.Application.Users.Commands.BulkAssignRoles;
 using UserHub.Web.Auth;
 using UserHub.Application.Users.Queries.GetUserActivity;
 using UserHub.Application.Users.Commands.ForceLogoutUser;
+using UserHub.Application.Users.Commands.HardDeleteUser;
 
 namespace UserHub.Web.Controllers;
 
@@ -129,6 +130,20 @@ public sealed class UsersController : ControllerBase
     public async Task<IActionResult> Delete(
         int id,
         [FromServices] DeleteUserService service,
+        CancellationToken cancellationToken)
+    {
+        await service.HandleAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
+    [HttpDelete("{id:int}/permanent")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DeletePermanent(
+        int id,
+        [FromServices] HardDeleteUserService service,
         CancellationToken cancellationToken)
     {
         await service.HandleAsync(id, cancellationToken);

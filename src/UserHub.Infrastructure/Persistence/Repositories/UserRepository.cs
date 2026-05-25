@@ -9,6 +9,7 @@ using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Infrastructure.Persistence.Entities;
 using UserHub.Application.Auth.Commands.Login;
 using UserHub.Application.Users.Queries.GetUserActivity;
+using UserHub.Application.Users.Commands.HardDeleteUser;
 
 namespace UserHub.Infrastructure.Persistence.Repositories;
 
@@ -328,5 +329,34 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
             .ToListAsync(cancellationToken);
 
         return (items, total);
+    }
+
+    public Task<HardDeleteUserInfo?> GetForHardDeleteAsync(int id, CancellationToken cancellationToken) =>
+        db.Users
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new HardDeleteUserInfo(
+                u.DeletedAt != null,
+                u.Role.Select(r => r.Name).FirstOrDefault()))
+            .FirstOrDefaultAsync(cancellationToken);
+
+    public Task<int> CountActiveByRoleNameAsync(string roleName, CancellationToken cancellationToken) =>
+        db.Users.CountAsync(u => u.Role.Any(r => r.Name == roleName), cancellationToken);
+
+    public async Task HardDeleteAsync(int id, CancellationToken cancellationToken)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+
+        await db.Sessions
+            .Where(s => s.UserId == id)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        await db.Users
+            .IgnoreQueryFilters()
+            .Where(u => u.Id == id)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        await tx.CommitAsync(cancellationToken);
     }
 }

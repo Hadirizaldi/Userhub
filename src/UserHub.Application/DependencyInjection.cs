@@ -31,6 +31,7 @@ using UserHub.Application.Auth.Commands.Refresh;
 using UserHub.Application.Auth.Jobs;
 using UserHub.Application.Users.Queries.GetUserActivity;
 using UserHub.Application.Users.Commands.ForceLogoutUser;
+using UserHub.Application.Users.Commands.HardDeleteUser;
 
 namespace UserHub.Application;
 
@@ -51,6 +52,7 @@ public static class DependencyInjection
         services.AddSingleton<PasswordPolicy>();
         services.AddSingleton<PhonePolicy>();
         services.AddSingleton<RoleChangePolicy>();
+        services.AddSingleton<AdminProtectionPolicy>();
 
         services.AddScoped<GetUsersService>();
         services.AddScoped<CreateUserService>();
@@ -81,6 +83,8 @@ public static class DependencyInjection
         services.AddScoped<TokenCleanupJob>();
         services.AddScoped<GetUserActivityService>();
         services.AddScoped<ForceLogoutUserService>();
+        services.AddScoped<DeleteUserService>();
+        services.AddScoped<HardDeleteUserService>();
 
         return services;
     }
