@@ -13,6 +13,7 @@ using UserHub.Application.Users.Commands.RestoreUser;
 using UserHub.Application.Users.Commands.BulkAssignRoles;
 using UserHub.Web.Auth;
 using UserHub.Application.Users.Queries.GetUserActivity;
+using UserHub.Application.Users.Commands.ForceLogoutUser;
 
 namespace UserHub.Web.Controllers;
 
@@ -162,6 +163,7 @@ public sealed class UsersController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpGet("activity")]
     [ProducesResponseType(typeof(PagedResult<UserActivityDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Activity(
@@ -171,5 +173,18 @@ public sealed class UsersController : ControllerBase
     {   
         var result = await service.HandleAsync(request, cancellationToken);
         return Ok(result);
+    }
+
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
+    [HttpPost("{id:int}/logout")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ForceLogout(
+        int id,
+        [FromServices] ForceLogoutUserService service,
+        CancellationToken cancellationToken)
+    {
+        await service.HandleAsync(id, cancellationToken);
+        return NoContent();
     }
 }

@@ -30,6 +30,7 @@ using UserHub.Application.Auth.Queries.GetSessions;
 using UserHub.Application.Auth.Commands.Refresh;
 using UserHub.Application.Auth.Jobs;
 using UserHub.Application.Users.Queries.GetUserActivity;
+using UserHub.Application.Users.Commands.ForceLogoutUser;
 
 namespace UserHub.Application;
 
@@ -79,6 +80,7 @@ public static class DependencyInjection
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<TokenCleanupJob>();
         services.AddScoped<GetUserActivityService>();
+        services.AddScoped<ForceLogoutUserService>();
 
         return services;
     }

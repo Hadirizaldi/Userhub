@@ -23,7 +23,7 @@ public sealed class JwtService(IOptions<JwtOptions> options) : IJwtService
         };
 
         if (!string.IsNullOrWhiteSpace(roleName)) 
-            claims.Add(new(ClaimTypes.Role, roleName));
+            claims.Add(new("role", roleName));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_opt.Secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
