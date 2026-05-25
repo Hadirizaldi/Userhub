@@ -8,6 +8,7 @@ public static class ErrorCodes
     public const string InvalidRefreshToken = "INVALID_REFRESH_TOKEN";
     public const string RefreshTokenExpired = "REFRESH_TOKEN_EXPIRED";
     public const string Forbidden = "FORBIDDEN";
+    public const string LastAdmin = "LAST_ADMIN";
 
     // User
     public const string EmailAlreadyTaken = "EMAIL_ALREADY_TAKEN";

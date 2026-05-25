@@ -6,6 +6,7 @@ using UserHub.Application.Users.Commands.ChangeUserStatus;
 using UserHub.Application.Users.Commands.ChangeUserPassword;
 using UserHub.Application.Auth.Commands.Login;
 using UserHub.Application.Users.Queries.GetUserActivity;
+using UserHub.Application.Users.Commands.HardDeleteUser;
 
 namespace UserHub.Application.Abstractions.Persistence;
 
@@ -51,4 +52,10 @@ public interface IUserRepository
         string? search,
         bool? IsLoggedIn,
         CancellationToken cancellationToken);
+
+    Task<HardDeleteUserInfo?> GetForHardDeleteAsync(int id, CancellationToken cancellationToken);
+
+    Task<int> CountActiveByRoleNameAsync (string roleName, CancellationToken cancellationToken);
+
+    Task HardDeleteAsync(int id, CancellationToken cancellationToken);
 }
