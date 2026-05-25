@@ -8,6 +8,7 @@ using UserHub.Application.Users.Commands.UpdateUser;
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Infrastructure.Persistence.Entities;
 using UserHub.Application.Auth.Commands.Login;
+using UserHub.Application.Users.Queries.GetUserActivity;
 
 namespace UserHub.Infrastructure.Persistence.Repositories;
 
@@ -267,4 +268,55 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
                 u.StatusId,
                 u.Role.Select(r => r.Name).FirstOrDefault()))
             .FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<(IReadOnlyList<UserActivityDto> Items, int TotalCount)> ListActivityAsync (
+        int Page,
+        int PageSize,
+        string? Search,
+        CancellationToken cancellationToken
+    )
+    {
+        var query = db.Users.AsNoTracking();
+
+        if (!string.IsNullOrEmpty(Search))
+        {
+            var s = $"%{Search.Trim()}%";
+            query = query.Where(u =>
+                EF.Functions.ILike(u.Fullname, s) ||
+                EF.Functions.ILike(u.Email, s) ||
+                EF.Functions.ILike(u.Nip, s)
+            );
+        }
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .Skip((Page - 1) * PageSize)
+            .Take(PageSize)
+            .Select(u => new UserActivityDto(
+                u.Id,
+                u.Nip,
+                u.Fullname,
+                u.Role.Select(r => r.Name).FirstOrDefault(),
+                u.LoginLogs
+                    .OrderByDescending(l => l.LoginAt)
+                    .Select(l => (DateTime?)l.LoginAt)
+                    .FirstOrDefault(),
+                u.LoginLogs
+                    .OrderByDescending(l => l.LoginAt)
+                    .Select(l => l.LogoutAt)
+                    .FirstOrDefault(),
+                u.LoginLogs
+                    .OrderByDescending(l => l.LoginAt)
+                    .Select(l => l.IsLoggedIn)
+                    .FirstOrDefault() ?? false,
+                u.StatusId,
+                u.Status.Name,
+                u.ConditionStatusId,
+                u.ConditionStatus.Name))
+            .ToListAsync(cancellationToken);
+
+        return (items, total);
+    }
 }

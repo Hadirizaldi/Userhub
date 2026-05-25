@@ -12,6 +12,7 @@ using UserHub.Application.Users.Commands.DeleteUser;
 using UserHub.Application.Users.Commands.RestoreUser;
 using UserHub.Application.Users.Commands.BulkAssignRoles;
 using UserHub.Web.Auth;
+using UserHub.Application.Users.Queries.GetUserActivity;
 
 namespace UserHub.Web.Controllers;
 
@@ -157,6 +158,17 @@ public sealed class UsersController : ControllerBase
         [FromServices] BulkAssignRolesService service,
         CancellationToken cancellationToken)
     {
+        var result = await service.HandleAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("activity")]
+    [ProducesResponseType(typeof(PagedResult<UserActivityDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Activity(
+        [FromQuery] GetUserActivityRequest request,
+        [FromServices] GetUserActivityService service,
+        CancellationToken cancellationToken)
+    {   
         var result = await service.HandleAsync(request, cancellationToken);
         return Ok(result);
     }
