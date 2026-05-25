@@ -1,6 +1,8 @@
 using FluentValidation;
+using UserHub.Application.Abstractions.Audit;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Application.AuditLogs;
 using UserHub.Application.Roles.Queries.GetRoleById;
 using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
@@ -12,7 +14,8 @@ public sealed class UpdateRoleService(
     IValidator<UpdateRoleRequest> validator,
     IRoleRepository roleRepository,
     IClock clock,
-    RoleProtectionPolicy roleProtectionPolicy)
+    RoleProtectionPolicy roleProtectionPolicy,
+    IAuditLogger auditLogger)
 {
     public async Task<RoleDto> HandleAsync(
         int id, UpdateRoleRequest request, CancellationToken cancellationToken)
@@ -37,6 +40,11 @@ public sealed class UpdateRoleService(
         var data = new UpdateRoleData(name, clock.UtcNow);
         var success = await roleRepository.UpdateAsync(id, data, cancellationToken);
         if (!success) throw NotFoundException.For("Role", id);
+
+        await auditLogger.LogAsync(
+            new AuditEntry("role.update", "role", id,
+                new { name = new { from = existing.Name, to = name } }),
+            cancellationToken);
 
         return await roleRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("Role not found after update.");

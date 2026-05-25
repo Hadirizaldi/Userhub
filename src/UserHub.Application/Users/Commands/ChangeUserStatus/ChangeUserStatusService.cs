@@ -1,6 +1,8 @@
 using FluentValidation;
+using UserHub.Application.Abstractions.Audit;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Application.AuditLogs;
 using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Domain.Common.Exceptions;
 
@@ -12,7 +14,8 @@ public sealed class ChangeUserStatusService(
     IUserStatusRepository userStatusRepository,
     ISessionRepository sessionRepository,
     IReferenceDataCatalog referenceDataCatalog,
-    IClock clock)
+    IClock clock,
+    IAuditLogger auditLogger)
 {
     public async Task<UserListItemDto> HandleAsync(
         int id, ChangeUserStatusRequest request, CancellationToken cancellationToken)
@@ -22,13 +25,22 @@ public sealed class ChangeUserStatusService(
         if (!await userStatusRepository.ExistsAsync(request.StatusId, cancellationToken))
             throw NotFoundException.For("UserStatus", request.StatusId);
 
+        var before = await userRepository.GetByIdAsync(id, cancellationToken);
+
         var data = new ChangeUserStatusData(request.StatusId, clock.UtcNow);
         var success = await userRepository.ChangeStatusAsync(id, data, cancellationToken);
         if (!success) throw NotFoundException.For("User", id);
         if (request.StatusId != referenceDataCatalog.ActiveUserStatusId)
             await sessionRepository.RevokeAllForUserAsync(id, clock.UtcNow, cancellationToken);
 
-        return await userRepository.GetByIdAsync(id, cancellationToken)
+        var dto = await userRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("User not found after status change.");
+
+        await auditLogger.LogAsync(
+            new AuditEntry("user.change_status", "user", id,
+                new { status = new { from = before?.StatusName, to = dto.StatusName } }),
+            cancellationToken);
+
+        return dto;
     }
 }

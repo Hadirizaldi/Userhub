@@ -1,6 +1,8 @@
 using FluentValidation;
+using UserHub.Application.Abstractions.Audit;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Application.AuditLogs;
 using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Users.Policies;
@@ -13,7 +15,8 @@ public sealed class BulkAssignRolesService(
     IRoleRepository roleRepository,
     IReferenceDataCatalog referenceDataCatalog,
     IClock clock,
-    RoleChangePolicy roleChangePolicy)
+    RoleChangePolicy roleChangePolicy,
+    IAuditLogger auditLogger)
 {
     public async Task<BulkAssignRolesResult> HandleAsync(
         BulkAssignRolesRequest request, CancellationToken cancellationToken)
@@ -50,6 +53,15 @@ public sealed class BulkAssignRolesService(
         var updatedCount = await userRepository.BulkAssignRolesAsync(
             request.Assignments.Select(a => (a.UserId, a.RoleId)).ToList(),
             clock.UtcNow,
+            cancellationToken);
+
+        await auditLogger.LogAsync(
+            new AuditEntry("user.bulk_assign_roles", "user", null,
+                new
+                {
+                    assignments = request.Assignments.Select(a => new { a.UserId, a.RoleId }),
+                    updated = updatedCount
+                }),
             cancellationToken);
 
         return new BulkAssignRolesResult(updatedCount);

@@ -1,0 +1,12 @@
+namespace UserHub.Application.AuditLogs.Queries.GetAuditLogs;
+
+public sealed record AuditLogDto(
+    long Id,
+    int? ActorUserId,
+    string Action,
+    string? EntityType,
+    int? EntityId,
+    string? Changes,
+    string? IpAddress,
+    DateTime CreatedAt
+);

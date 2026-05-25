@@ -1,5 +1,7 @@
+using UserHub.Application.Abstractions.Audit;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
+using UserHub.Application.AuditLogs;
 using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Roles.Policies;
@@ -10,7 +12,8 @@ public sealed class DeleteRoleService(
     IRoleRepository roleRepository,
     IUserRepository userRepository,
     IClock clock,
-    RoleProtectionPolicy roleProtectionPolicy)
+    RoleProtectionPolicy roleProtectionPolicy,
+    IAuditLogger auditLogger)
 {
     public async Task HandleAsync(int id, CancellationToken cancellationToken)
     {
@@ -29,5 +32,8 @@ public sealed class DeleteRoleService(
 
         var success = await roleRepository.SoftDeleteAsync(id, clock.UtcNow, cancellationToken);
         if (!success) throw NotFoundException.For("Role", id);
+
+        await auditLogger.LogAsync(
+            new AuditEntry("role.delete", "role", id), cancellationToken);
     }
 }

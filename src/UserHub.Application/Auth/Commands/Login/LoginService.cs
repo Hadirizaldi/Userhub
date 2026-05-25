@@ -1,8 +1,10 @@
 using FluentValidation;
+using UserHub.Application.Abstractions.Audit;
 using UserHub.Application.Abstractions.Auth;
 using UserHub.Application.Abstractions.Persistence;
 using UserHub.Application.Abstractions.Time;
 using UserHub.Application.Auth;
+using UserHub.Application.AuditLogs;
 using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using Microsoft.Extensions.Options;
@@ -20,6 +22,7 @@ public sealed class LoginService(
     IClientInfoAccessor clientInfoAccessor,
     IReferenceDataCatalog referenceDataCatalog,
     IClock clock,
+    IAuditLogger auditLogger,
     IOptions<JwtOptions> jwtOptions)
 {
     private readonly JwtOptions _jwt = jwtOptions.Value;
@@ -34,10 +37,22 @@ public sealed class LoginService(
         var creds = await userRepository.GetCredentialsByEmailAsync(email, cancellationToken);
 
         if (creds is null || !passwordHasher.Verify(request.Password, creds.PasswordHash))
+        {
+            await auditLogger.LogAsync(
+                new AuditEntry("auth.login_failed", "user", creds?.Id,
+                    new { email, reason = "invalid_credentials" }),
+                cancellationToken);
             throw new UnauthorizedException(ErrorCodes.InvalidCredentials, "Invalid email or password.");
+        }
 
-        if(creds.StatusId != referenceDataCatalog.ActiveUserStatusId)
+        if (creds.StatusId != referenceDataCatalog.ActiveUserStatusId)
+        {
+            await auditLogger.LogAsync(
+                new AuditEntry("auth.login_failed", "user", creds.Id,
+                    new { email, reason = "inactive" }),
+                cancellationToken);
             throw new UnauthorizedException(ErrorCodes.UserInactive, "Account is not active.");
+        }
 
         var (plaintext, hash) = refreshTokenGenerator.Generate();
         var now = clock.UtcNow;

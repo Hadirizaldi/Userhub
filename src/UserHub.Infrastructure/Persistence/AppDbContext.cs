@@ -7,14 +7,12 @@ namespace UserHub.Infrastructure.Persistence;
 
 public partial class AppDbContext : DbContext
 {
-    public AppDbContext()
-    {
-    }
-
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
+
+    public virtual DbSet<AuditLogs> AuditLogs { get; set; }
 
     public virtual DbSet<ConditionStatuses> ConditionStatuses { get; set; }
 
@@ -30,13 +28,48 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Users> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=userhub;Username=postgres;Password=Skyworx@2025!");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("pgcrypto");
+
+        modelBuilder.Entity<AuditLogs>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("audit_logs_pkey");
+
+            entity.ToTable("audit_logs");
+
+            entity.HasIndex(e => e.Action, "idx_audit_logs_action");
+
+            entity.HasIndex(e => e.ActorUserId, "idx_audit_logs_actor");
+
+            entity.HasIndex(e => e.CreatedAt, "idx_audit_logs_created_at").IsDescending();
+
+            entity.HasIndex(e => new { e.EntityType, e.EntityId }, "idx_audit_logs_entity");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Action)
+                .HasMaxLength(50)
+                .HasColumnName("action");
+            entity.Property(e => e.ActorUserId).HasColumnName("actor_user_id");
+            entity.Property(e => e.Changes)
+                .HasColumnType("jsonb")
+                .HasColumnName("changes");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EntityId).HasColumnName("entity_id");
+            entity.Property(e => e.EntityType)
+                .HasMaxLength(50)
+                .HasColumnName("entity_type");
+            entity.Property(e => e.IpAddress)
+                .HasMaxLength(45)
+                .HasColumnName("ip_address");
+
+            entity.HasOne(d => d.ActorUser).WithMany(p => p.AuditLogs)
+                .HasForeignKey(d => d.ActorUserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("fk_audit_actor");
+        });
 
         modelBuilder.Entity<ConditionStatuses>(entity =>
         {

@@ -17,6 +17,8 @@ using UserHub.Infrastructure.Persistence.Repositories;
 using UserHub.Infrastructure.Security;
 using UserHub.Infrastructure.Settings;
 using UserHub.Infrastructure.Time;
+using UserHub.Application.Abstractions.Audit;
+using UserHub.Infrastructure.Audit;
 
 namespace UserHub.Infrastructure;
 
@@ -87,6 +89,8 @@ public static class DependencyInjection
         services.AddScoped<IUserStatusRepository, UserStatusRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IJobDispatcher, HangfireJobDispatcher>();
+        services.AddScoped<IAuditLogger, AuditLogger>();
+        services.AddScoped<IAuditLogReader, AuditLogReader>();
 
         return services;
     }
