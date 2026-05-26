@@ -2,7 +2,7 @@
 
 # ---- Build stage ----
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /scr
+WORKDIR /src
 
 # Copy csproj dulu lalu restore → layer ini ke-cache selama dependency nggak berubah.
 COPY src/UserHub.Domain/UserHub.Domain.csproj                 src/UserHub.Domain/
