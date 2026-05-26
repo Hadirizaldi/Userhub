@@ -7,18 +7,18 @@ namespace UserHub.Application.Users.Commands.HardDeleteUser;
 
 public sealed class HardDeleteUserService(
     IUserRepository userRepository,
-    AdminProtectionPolicy adminProtectionPolicy)
+    UserDeletionPolicy userDeletionPolicy)
 {
     public async Task HandleAsync(int id, CancellationToken cancellationToken)
     {
-        var info = await userRepository.GetForHardDeleteAsync(id, cancellationToken)
+        var info = await userRepository.GetForDeletionAsync(id, cancellationToken)
             ?? throw NotFoundException.For("User", id);
 
         if (!info.IsDeleted && info.RoleName == RoleNames.Admin)
         {
             var activeAdmins = await userRepository.CountActiveByRoleNameAsync(
                 RoleNames.Admin, cancellationToken);
-            adminProtectionPolicy.EnsureNotLastAdmin(activeAdmins);
+            userDeletionPolicy.EnsureNotLastAdmin(activeAdmins);
         }
 
         await userRepository.HardDeleteAsync(id, cancellationToken);

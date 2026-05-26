@@ -9,7 +9,7 @@ using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Infrastructure.Persistence.Entities;
 using UserHub.Application.Auth.Commands.Login;
 using UserHub.Application.Users.Queries.GetUserActivity;
-using UserHub.Application.Users.Commands.HardDeleteUser;
+using UserHub.Application.Users.Commands.DeleteUser;
 
 namespace UserHub.Infrastructure.Persistence.Repositories;
 
@@ -331,12 +331,12 @@ public sealed class UserRepository(AppDbContext db) : IUserRepository
         return (items, total);
     }
 
-    public Task<HardDeleteUserInfo?> GetForHardDeleteAsync(int id, CancellationToken cancellationToken) =>
+    public Task<UserDeletionInfo?> GetForDeletionAsync(int id, CancellationToken cancellationToken) =>
         db.Users
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Where(u => u.Id == id)
-            .Select(u => new HardDeleteUserInfo(
+            .Select(u => new UserDeletionInfo(
                 u.DeletedAt != null,
                 u.Role.Select(r => r.Name).FirstOrDefault()))
             .FirstOrDefaultAsync(cancellationToken);
