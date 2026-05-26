@@ -39,6 +39,8 @@ public sealed class AuditLogReader(AppDbContext db) : IAuditLogReader
             .Select(a => new AuditLogDto(
                 a.Id,
                 a.ActorUserId,
+                a.ActorUser != null ? a.ActorUser.Fullname : null,
+                a.ActorUser != null ? a.ActorUser.Email : null,
                 a.Action,
                 a.EntityType,
                 a.EntityId,
