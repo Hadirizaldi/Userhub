@@ -19,6 +19,8 @@ using UserHub.Infrastructure.Settings;
 using UserHub.Infrastructure.Time;
 using UserHub.Application.Abstractions.Audit;
 using UserHub.Infrastructure.Audit;
+using UserHub.Application.Abstractions.Messaging;
+using UserHub.Infrastructure.Messaging;
 
 namespace UserHub.Infrastructure;
 
@@ -40,6 +42,11 @@ public static class DependencyInjection
 
         services.AddOptions<HangfireOptions>()
             .Bind(configuration.GetSection(HangfireOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<RabbitMqOptions>()
+            .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -77,9 +84,12 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
-
         services.AddSingleton<ReferenceDataCatalog>();
         services.AddSingleton<IReferenceDataCatalog>(sp => sp.GetRequiredService<ReferenceDataCatalog>());
+        services.AddSingleton<RabbitMqConnection>();
+        services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
+
+        services.AddHostedService<RabbitMqConsumer>();
         services.AddHostedService(sp => sp.GetRequiredService<ReferenceDataCatalog>());
 
         services.AddScoped<INipGenerator, NipGenerator>();

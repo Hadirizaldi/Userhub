@@ -1,6 +1,6 @@
 namespace UserHub.Application.Abstractions.Messaging;
 
-public interface IEvenPublisher
+public interface IEventPublisher
 {
     Task PublishAsync<T>( string routingKey,T @event, CancellationToken cancellationToken );
 }

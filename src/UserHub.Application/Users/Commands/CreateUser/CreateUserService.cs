@@ -8,6 +8,8 @@ using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Users.Policies;
+using UserHub.Application.Users.Events;
+using UserHub.Application.Abstractions.Messaging;
 
 namespace UserHub.Application.Users.Commands.CreateUser;
 
@@ -19,7 +21,8 @@ public sealed class CreateUserService(
     IReferenceDataCatalog referenceDataCatalog,
     IClock clock,
     PhonePolicy phonePolicy,
-    IAuditLogger auditLogger)
+    IAuditLogger auditLogger,
+    IEventPublisher eventPublisher)
 {
     public async Task<UserListItemDto> HandleAsync(
         CreateUserRequest request,
@@ -57,6 +60,12 @@ public sealed class CreateUserService(
 
         await auditLogger.LogAsync(
             new AuditEntry("user.create", "user", id), cancellationToken);
+
+        await eventPublisher.PublishAsync(
+            UserRegisteredEvent.RoutingKey,
+            new UserRegisteredEvent(id, email, request.Fullname.Trim()),
+            cancellationToken   
+        );
 
         var created = await userRepository.GetByIdAsync(id, cancellationToken);
         return created ?? throw new InvalidOperationException("Newly created user not found.");

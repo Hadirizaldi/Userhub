@@ -33,6 +33,7 @@ using UserHub.Application.Users.Queries.GetUserActivity;
 using UserHub.Application.Users.Commands.ForceLogoutUser;
 using UserHub.Application.Users.Commands.HardDeleteUser;
 using UserHub.Application.AuditLogs.Queries.GetAuditLogs;
+using UserHub.Application.Users.Events;
 
 namespace UserHub.Application;
 
@@ -87,6 +88,7 @@ public static class DependencyInjection
         services.AddScoped<DeleteUserService>();
         services.AddScoped<HardDeleteUserService>();
         services.AddScoped<GetAuditLogsService>();
+        services.AddScoped<UserRegisteredHandler>();
 
         return services;
     }
