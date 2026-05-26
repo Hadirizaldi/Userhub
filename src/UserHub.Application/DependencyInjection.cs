@@ -53,7 +53,7 @@ public static class DependencyInjection
         services.AddSingleton<PasswordPolicy>();
         services.AddSingleton<PhonePolicy>();
         services.AddSingleton<RoleChangePolicy>();
-        services.AddSingleton<AdminProtectionPolicy>();
+        services.AddSingleton<UserDeletionPolicy>();
 
         services.AddScoped<GetUsersService>();
         services.AddScoped<CreateUserService>();

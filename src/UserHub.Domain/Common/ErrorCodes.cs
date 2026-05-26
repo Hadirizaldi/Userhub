@@ -14,6 +14,7 @@ public static class ErrorCodes
     public const string EmailAlreadyTaken = "EMAIL_ALREADY_TAKEN";
     public const string UserNotActive = "USER_NOT_ACTIVE";
     public const string UsersNotFound = "USERS_NOT_FOUND";
+    public const string CannotDeleteSelf = "CANNOT_DELETE_SELF";
 
     // Role
     public const string RoleNameTaken = "ROLE_NAME_TAKEN";
