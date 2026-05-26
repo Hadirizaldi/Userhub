@@ -21,6 +21,8 @@ using UserHub.Application.Abstractions.Audit;
 using UserHub.Infrastructure.Audit;
 using UserHub.Application.Abstractions.Messaging;
 using UserHub.Infrastructure.Messaging;
+using UserHub.Application.Abstractions.Email;
+using UserHub.Infrastructure.Email;
 
 namespace UserHub.Infrastructure;
 
@@ -47,6 +49,11 @@ public static class DependencyInjection
 
         services.AddOptions<RabbitMqOptions>()
             .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<SmtpOptions>()
+            .Bind(configuration.GetSection(SmtpOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -101,6 +108,7 @@ public static class DependencyInjection
         services.AddScoped<IJobDispatcher, HangfireJobDispatcher>();
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<IAuditLogReader, AuditLogReader>();
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
 
         return services;
     }
