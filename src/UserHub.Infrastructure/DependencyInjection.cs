@@ -19,6 +19,10 @@ using UserHub.Infrastructure.Settings;
 using UserHub.Infrastructure.Time;
 using UserHub.Application.Abstractions.Audit;
 using UserHub.Infrastructure.Audit;
+using UserHub.Application.Abstractions.Messaging;
+using UserHub.Infrastructure.Messaging;
+using UserHub.Application.Abstractions.Email;
+using UserHub.Infrastructure.Email;
 
 namespace UserHub.Infrastructure;
 
@@ -40,6 +44,16 @@ public static class DependencyInjection
 
         services.AddOptions<HangfireOptions>()
             .Bind(configuration.GetSection(HangfireOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<RabbitMqOptions>()
+            .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<SmtpOptions>()
+            .Bind(configuration.GetSection(SmtpOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -77,9 +91,12 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
-
         services.AddSingleton<ReferenceDataCatalog>();
         services.AddSingleton<IReferenceDataCatalog>(sp => sp.GetRequiredService<ReferenceDataCatalog>());
+        services.AddSingleton<RabbitMqConnection>();
+        services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
+
+        services.AddHostedService<RabbitMqConsumer>();
         services.AddHostedService(sp => sp.GetRequiredService<ReferenceDataCatalog>());
 
         services.AddScoped<INipGenerator, NipGenerator>();
@@ -91,6 +108,11 @@ public static class DependencyInjection
         services.AddScoped<IJobDispatcher, HangfireJobDispatcher>();
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<IAuditLogReader, AuditLogReader>();
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<IOutboxWriter, OutboxWriter>();
+        services.AddScoped<IOutboxReader, OutboxReader>();
+        services.AddScoped<IProcessedMessageStore, ProcessedMessageStore>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
         return services;
     }

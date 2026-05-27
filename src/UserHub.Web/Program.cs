@@ -24,7 +24,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
-    Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+    Authorization = new[] { new HangfireDashboardAuthorizationFilter(app.Environment.IsDevelopment()) }
 });
 
 app.UseAuthentication();

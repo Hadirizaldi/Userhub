@@ -18,6 +18,10 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<LoginLogs> LoginLogs { get; set; }
 
+    public virtual DbSet<OutboxMessages> OutboxMessages { get; set; }
+
+    public virtual DbSet<ProcessedMessages> ProcessedMessages { get; set; }
+
     public virtual DbSet<RefreshTokens> RefreshTokens { get; set; }
 
     public virtual DbSet<Roles> Roles { get; set; }
@@ -104,6 +108,45 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.LoginLogs)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("fk_log_user");
+        });
+
+        modelBuilder.Entity<OutboxMessages>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("outbox_messages_pkey");
+
+            entity.ToTable("outbox_messages");
+
+            entity.HasIndex(e => e.CreatedAt, "ix_outbox_unprocessed").HasFilter("(processed_at IS NULL)");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Attempts)
+                .HasDefaultValue(0)
+                .HasColumnName("attempts");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.Error).HasColumnName("error");
+            entity.Property(e => e.Payload)
+                .HasColumnType("jsonb")
+                .HasColumnName("payload");
+            entity.Property(e => e.ProcessedAt).HasColumnName("processed_at");
+            entity.Property(e => e.Type).HasColumnName("type");
+        });
+
+        modelBuilder.Entity<ProcessedMessages>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("processed_messages_pkey");
+
+            entity.ToTable("processed_messages");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.ProcessedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("processed_at");
         });
 
         modelBuilder.Entity<RefreshTokens>(entity =>

@@ -8,6 +8,8 @@ using UserHub.Application.Users.Queries.GetUsers;
 using UserHub.Domain.Common;
 using UserHub.Domain.Common.Exceptions;
 using UserHub.Domain.Users.Policies;
+using UserHub.Application.Users.Events;
+using UserHub.Application.Abstractions.Messaging;
 
 namespace UserHub.Application.Users.Commands.CreateUser;
 
@@ -19,7 +21,9 @@ public sealed class CreateUserService(
     IReferenceDataCatalog referenceDataCatalog,
     IClock clock,
     PhonePolicy phonePolicy,
-    IAuditLogger auditLogger)
+    IAuditLogger auditLogger,
+    IUnitOfWork unitOfWork,
+    IOutboxWriter outboxWriter)
 {
     public async Task<UserListItemDto> HandleAsync(
         CreateUserRequest request,
@@ -52,11 +56,23 @@ public sealed class CreateUserService(
             RoleId: referenceDataCatalog.EmployeeRoleId,
             CreatedAt: now,
             UpdatedAt: now);
+            
+        await using var tx = await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         var id = await userRepository.AddAsync(data, cancellationToken);
 
         await auditLogger.LogAsync(
             new AuditEntry("user.create", "user", id), cancellationToken);
+
+        await auditLogger.LogAsync(
+            new AuditEntry("user.create", "user", id), cancellationToken);
+
+        await outboxWriter.AddAsync(
+            UserRegisteredEvent.RoutingKey,
+            new UserRegisteredEvent(id, email, request.Fullname.Trim()),
+            cancellationToken);
+
+        await tx.CommitAsync(cancellationToken);
 
         var created = await userRepository.GetByIdAsync(id, cancellationToken);
         return created ?? throw new InvalidOperationException("Newly created user not found.");
