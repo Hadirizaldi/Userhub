@@ -89,6 +89,7 @@ public static class DependencyInjection
         services.AddScoped<HardDeleteUserService>();
         services.AddScoped<GetAuditLogsService>();
         services.AddScoped<UserRegisteredHandler>();
+        
 
         return services;
     }

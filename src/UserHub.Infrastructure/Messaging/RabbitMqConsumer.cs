@@ -7,6 +7,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using UserHub.Application.Users.Events;
 using UserHub.Infrastructure.Settings;
+using UserHub.Application.Abstractions.Messaging;
 
 namespace UserHub.Infrastructure.Messaging;
 
@@ -37,24 +38,37 @@ public sealed class RabbitMqConsumer (
         {
             try
             {
-                var evt = JsonSerializer.Deserialize<UserRegisteredEvent>(ea.Body.Span)
-                    ?? throw new InvalidOperationException("Pesan tidak valid.");
-
+                if (!Guid.TryParse(ea.BasicProperties.MessageId, out var messageId))
+                    throw new InvalidOperationException("MessageId is missing or invalid.");
+                    
                 using var scope = scopeFactory.CreateScope();
+                var dedup = scope.ServiceProvider.GetRequiredService<IProcessedMessageStore>();
+        
+                if (await dedup.ExistsAsync(messageId, cancellationToken))
+                {
+                    logger.LogInformation("Message {MessageId} already processed, skipping.", messageId);
+                    await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                    return;
+                }   
+        
+                var evt = JsonSerializer.Deserialize<UserRegisteredEvent>(ea.Body.Span)
+                    ?? throw new InvalidOperationException("Invalid message payload.");
+        
                 var handler = scope.ServiceProvider.GetRequiredService<UserRegisteredHandler>();
                 await handler.HandleAsync(evt, cancellationToken);
-
+        
+                await dedup.AddAsync(messageId, cancellationToken);
                 await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Gagal proses pesan, dibuang (requeue=false).");
+                logger.LogError(ex, "Failed to process message, discarding (requeue=false).");
                 await _channel!.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
-            }
+            }   
         };
 
         await _channel.BasicConsumeAsync(queue: _opt.Queue, autoAck: false, consumer: consumer, cancellationToken: cancellationToken);
-        logger.LogInformation("RabbitMqConsumer mendengarkan queue {Queue}", _opt.Queue);
+        logger.LogInformation("RabbitMqConsumer is listening on queue {Queue}", _opt.Queue);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

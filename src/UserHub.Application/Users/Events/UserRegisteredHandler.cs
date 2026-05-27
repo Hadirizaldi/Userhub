@@ -11,14 +11,14 @@ public sealed class UserRegisteredHandler(
     {
 
         var body =
-            $"Halo {@event.Fullname},\n\n" +
-            "Akun kamu di UserHub berhasil dibuat.\n" +
-            "(Verifikasi email menyusul di tahap berikutnya.)\n";
+            $"Hi {@event.Fullname},\n\n" +
+            "Your UserHub account has been created successfully.\n" +
+            "(Email verification will follow in a later phase.)\n";
 
         await emailSender.SendAsync(
             new Email.EmailMessage(
                 @event.Email,
-                "Selamat datang di UserHub!",
+                "Welcome to UserHub!",
                 body
             ), cancellationToken
         );

@@ -109,6 +109,10 @@ public static class DependencyInjection
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<IAuditLogReader, AuditLogReader>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<IOutboxWriter, OutboxWriter>();
+        services.AddScoped<IOutboxReader, OutboxReader>();
+        services.AddScoped<IProcessedMessageStore, ProcessedMessageStore>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
         return services;
     }

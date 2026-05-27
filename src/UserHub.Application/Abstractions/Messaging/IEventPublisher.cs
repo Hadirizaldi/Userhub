@@ -2,5 +2,5 @@ namespace UserHub.Application.Abstractions.Messaging;
 
 public interface IEventPublisher
 {
-    Task PublishAsync<T>( string routingKey,T @event, CancellationToken cancellationToken );
+    Task PublishAsync(string routingKey, string payload, Guid messageId, CancellationToken ct);
 }

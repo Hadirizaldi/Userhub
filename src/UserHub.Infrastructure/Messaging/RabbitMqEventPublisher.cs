@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -15,7 +14,7 @@ public sealed class RabbitMqEventPublisher (
 {
     private readonly RabbitMqOptions _opt = options.Value;
 
-    public async Task PublishAsync<T>(string routingKey, T @event, CancellationToken cancellationToken)
+    public async Task PublishAsync(string routingKey, string payload, Guid messageId,CancellationToken cancellationToken)
     {
         try
         {
@@ -29,9 +28,10 @@ public sealed class RabbitMqEventPublisher (
                 cancellationToken: cancellationToken
             );
 
-            var body = JsonSerializer.SerializeToUtf8Bytes(@event);
+            var body = System.Text.Encoding.UTF8.GetBytes(payload);
             var props = new BasicProperties
             {
+                MessageId = messageId.ToString(),
                 DeliveryMode = DeliveryModes.Persistent
             };
 
@@ -44,14 +44,12 @@ public sealed class RabbitMqEventPublisher (
                 cancellationToken: cancellationToken
             );
 
-            logger.LogInformation("Published event {RoutingKey}", routingKey);
+            logger.LogInformation("Published event {RoutingKey} ({MessageId})", routingKey, messageId);
         }
         catch (Exception ex)
         {
-            // Tahap 1: fire-and-forget. Broker error tidak boleh gagalin operasi bisnis.
-            // Reliability sesungguhnya nanti di Outbox (Tahap 3).
-
-            logger.LogWarning(ex, "Gagal publish {RoutingKey}, diabaikan.", routingKey);
+            logger.LogWarning(ex, "Failed to publish {RoutingKey} ({MessageId})", routingKey, messageId);
+            throw;
         }
     }
 }

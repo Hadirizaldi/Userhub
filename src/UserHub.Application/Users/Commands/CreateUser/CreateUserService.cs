@@ -22,7 +22,8 @@ public sealed class CreateUserService(
     IClock clock,
     PhonePolicy phonePolicy,
     IAuditLogger auditLogger,
-    IEventPublisher eventPublisher)
+    IUnitOfWork unitOfWork,
+    IOutboxWriter outboxWriter)
 {
     public async Task<UserListItemDto> HandleAsync(
         CreateUserRequest request,
@@ -55,17 +56,23 @@ public sealed class CreateUserService(
             RoleId: referenceDataCatalog.EmployeeRoleId,
             CreatedAt: now,
             UpdatedAt: now);
+            
+        await using var tx = await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         var id = await userRepository.AddAsync(data, cancellationToken);
 
         await auditLogger.LogAsync(
             new AuditEntry("user.create", "user", id), cancellationToken);
 
-        await eventPublisher.PublishAsync(
+        await auditLogger.LogAsync(
+            new AuditEntry("user.create", "user", id), cancellationToken);
+
+        await outboxWriter.AddAsync(
             UserRegisteredEvent.RoutingKey,
             new UserRegisteredEvent(id, email, request.Fullname.Trim()),
-            cancellationToken   
-        );
+            cancellationToken);
+
+        await tx.CommitAsync(cancellationToken);
 
         var created = await userRepository.GetByIdAsync(id, cancellationToken);
         return created ?? throw new InvalidOperationException("Newly created user not found.");

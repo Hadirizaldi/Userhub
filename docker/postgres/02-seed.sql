@@ -1,7 +1,7 @@
 -- Seed data: master/lookup + demo users
--- Dijalankan setelah 01-schema.sql (docker-entrypoint-initdb.d urut alfabet).
+-- Runs after 01-schema.sql (docker-entrypoint-initdb.d executes in alphabetical order).
 
--- pgcrypto: hashing bcrypt via crypt()/gen_salt('bf'), kompatibel dengan BCrypt.Net di app.
+-- pgcrypto: bcrypt hashing via crypt()/gen_salt('bf'), compatible with BCrypt.Net in the app.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- 1. Roles (is_system=true utk role yang dilindungi dari hapus)

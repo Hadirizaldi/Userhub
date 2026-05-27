@@ -2,6 +2,7 @@ using Hangfire;
 using Microsoft.Extensions.Options;
 using UserHub.Application.Auth;
 using UserHub.Application.Auth.Jobs;
+using UserHub.Application.Messaging.Jobs;
 
 namespace UserHub.Web.Extensions;
 
@@ -26,5 +27,11 @@ public static class HangfireJobsExtensions
             {
                 TimeZone = TimeZoneInfo.FindSystemTimeZoneById(opt.TimeZone)
             });
+
+        RecurringJob.AddOrUpdate<OutboxRelayJob>(
+            "outbox-relay",
+            job => job.RunAsync(CancellationToken.None),
+            "*/10 * * * * *"
+        );
     }
 }
